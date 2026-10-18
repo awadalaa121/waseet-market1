@@ -315,7 +315,7 @@
             <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
-        <!-- ==================== 2. لوحة البائع وأرباحه وسحب الرصيد ==================== -->
+        <!-- ==================== 2. لوحة البائع والأرباح وسحب الرصيد ==================== -->
         <section id="tab-seller" class="hidden space-y-8">
             <div class="text-center max-w-3xl mx-auto space-y-2">
                 <span class="px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold">
@@ -469,7 +469,7 @@
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 p-6 rounded-3xl border border-emerald-500/40 shadow-xl">
                 <div>
                     <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-2 inline-block">🔒 لوحة المالك الرسمية (Awad.alaa1)</span>
-                    <h2 class="text-2xl font-black text-white">إدارة المشترين، البائعين، طلبات السحب، والاسترجاع</h2>
+                    <h2 class="text-2xl font-black text-white">إدارة المشترين، فحص البائعين، وإشعارات الاعتماد والرفض</h2>
                 </div>
                 <div class="flex items-center gap-3">
                     <button onclick="openWithdrawModal()" class="bg-emerald-500 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs cursor-pointer">سحب أرباحي</button>
@@ -499,18 +499,20 @@
 
             <!-- جدول إدارة المشترين والبائعين -->
             <div class="glass-card rounded-3xl p-6 border border-amber-500/30 space-y-4">
-                <h3 class="text-base font-black text-white">1. معرفة وإدارة حسابات المشترين والبائعين</h3>
+                <h3 class="text-base font-black text-white flex items-center justify-between">
+                    <span>1. فحص واعتماد أو رفض حسابات البائعين والمشترين</span>
+                    <span class="text-xs text-amber-400 font-normal">عند الضغط يرسل النظام إشعار SMS وإيميل تلقائي للبائع</span>
+                </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
                         <thead>
                             <tr class="border-b border-gray-800 text-gray-400 bg-slate-900">
                                 <th class="py-3 px-4">اسم المستخدم</th>
                                 <th class="py-3 px-4">نوع الحساب</th>
-                                <th class="py-3 px-4">التليفون</th>
-                                <th class="py-3 px-4">الإيميل</th>
-                                <th class="py-3 px-4">الهوية والبطاقة</th>
+                                <th class="py-3 px-4">التليفون والإيميل</th>
+                                <th class="py-3 px-4">الهوية والبطاقة الشخصية</th>
                                 <th class="py-3 px-4">الحالة</th>
-                                <th class="py-3 px-4">إجراءات المالك</th>
+                                <th class="py-3 px-4">إجراءات المالك (اعتماد / رفض)</th>
                             </tr>
                         </thead>
                         <tbody id="admin-users-tbody" class="divide-y divide-gray-800"></tbody>
@@ -559,6 +561,18 @@
             </div>
         </section>
     </main>
+
+    <!-- نافذة عرض محاكاة رسالة الإيميل والـ SMS المرسلة للبائع -->
+    <div id="notification-simulator-modal" class="fixed inset-0 z-50 hidden bg-black/85 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-emerald-500 rounded-3xl max-w-lg w-full p-6 space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                <h3 class="font-black text-emerald-400 text-sm"><i class="fa-solid fa-paper-plane ml-1"></i> سجل الإشعارات المرسلة (SMS & Email)</h3>
+                <button onclick="closeNotificationSimulator()" class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="notification-simulator-body" class="space-y-3"></div>
+            <button onclick="closeNotificationSimulator()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">إغلاق</button>
+        </div>
+    </div>
 
     <!-- نافذة الدفع للمشتري -->
     <div id="checkout-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -617,7 +631,7 @@
         </div>
     </div>
 
-    <!-- نافذة طلب سحب الأرباح للبائع (خلال دقيقة) -->
+    <!-- نافذة طلب سحب الأرباح للبائع -->
     <div id="seller-withdraw-modal" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-gray-700 rounded-3xl max-w-sm w-full p-6 space-y-4 text-xs">
             <div class="flex justify-between items-center border-b border-gray-800 pb-2"><h3 class="font-black text-white">طلب سحب رصيدي كبائع ⚡</h3><button onclick="closeSellerWithdrawModal()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
@@ -650,7 +664,7 @@
         </div>
     </div>
 
-    <!-- نافذة معاينة المستند أو البطاقة -->
+    <!-- نافذة معاينة البطاقة والمستندات -->
     <div id="receipt-viewer-modal" class="fixed inset-0 z-50 hidden bg-black/85 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-gray-700 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
             <div class="flex justify-between items-center border-b border-gray-800 pb-2">
@@ -715,6 +729,20 @@
             localStorage.setItem('waseet_products', JSON.stringify(products));
             localStorage.setItem('waseet_transactions', JSON.stringify(transactions));
         }
+
+        // الاستماع للتحديثات الحية بين التبويبات والموبايلات
+        window.addEventListener('storage', function(e) {
+            users = JSON.parse(localStorage.getItem('waseet_users')) || [];
+            currentUser = JSON.parse(localStorage.getItem('waseet_current_user')) || null;
+            products = JSON.parse(localStorage.getItem('waseet_products')) || [];
+            transactions = JSON.parse(localStorage.getItem('waseet_transactions')) || [];
+            
+            renderProducts();
+            updateHeaderUserUI();
+            updateAdminDashboard();
+            updateSellerDashboardUI();
+            updateBuyerDashboardUI();
+        });
 
         function getCommissionDetails(price) {
             const numericPrice = parseFloat(price) || 0;
@@ -899,9 +927,12 @@
             if (!currentUser || currentUser.role !== 'seller') {
                 ws.classList.add('opacity-40', 'pointer-events-none');
                 gate.innerHTML = `<h3 class="text-lg font-black text-white">هذه الصفحة خاصة بالبائعين فقط</h3><button onclick="switchTab('auth'); switchAuthSubView('register');" class="mt-2 bg-emerald-500 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs cursor-pointer">إنشاء حساب بائع</button>`;
-            } else if (currentUser.status !== 'approved') {
+            } else if (currentUser.status === 'pending') {
                 ws.classList.add('opacity-40', 'pointer-events-none');
-                gate.innerHTML = `<h3 class="text-lg font-black text-amber-400">حسابك كبائع قيد الفحص والمراجعة من المالك ⏳</h3>`;
+                gate.innerHTML = `<h3 class="text-lg font-black text-amber-400">حسابك كبائع قيد الفحص والمراجعة من المالك ⏳</h3><p class="text-xs text-gray-300 mt-1">سيتم مراجعة بطاقتك الشخصية وإرسال نتيجة الاعتماد عبر الإيميل ورسالة الهاتف قريباً.</p>`;
+            } else if (currentUser.status === 'rejected') {
+                ws.classList.add('opacity-40', 'pointer-events-none');
+                gate.innerHTML = `<h3 class="text-lg font-black text-red-400">عذراً، تم رفض حسابك كبائع ❌</h3><p class="text-xs text-gray-300 mt-1">راجع الدعم الفني أو تواصل مع المالك لمعرفة السبب.</p>`;
             } else {
                 ws.classList.remove('opacity-40', 'pointer-events-none');
                 if (sellerInput) sellerInput.value = currentUser.name;
@@ -970,7 +1001,6 @@
             const num = document.getElementById('seller-payout-number').value.trim();
             if (!num) { showToast("مطلوب", "أدخل رقم المحفظة."); return; }
             closeSellerWithdrawModal();
-            // معالجة فورية خلال دقيقة
             setTimeout(() => {
                 showToast("تم تحويل المبلغ بنجاح خلال دقيقة ⚡", "تم إرسال مستحقاتك إلى محفظتك المحددة.");
             }, 800);
@@ -1176,6 +1206,7 @@
 
         function lockAdminPanel() { isAdminUnlocked = false; switchTab('marketplace'); showToast("تم قفل لوحة المالك 🔒"); }
 
+        // اعتماد أو رفض البائع وإرسال إشعار SMS وإيميل محاكى
         function updateUserStatus(userId, status) {
             const u = users.find(user => user.id === userId);
             if (u) {
@@ -1183,8 +1214,28 @@
                 saveDataToStorage();
                 updateAdminDashboard();
                 updateHeaderUserUI();
-                showToast("تم تحديث حالة المستخدم بنجاح");
+
+                // محاكاة إرسال الإشعار
+                const actionText = status === 'approved' ? '✅ تم اعتماد حسابك وتفعيله بنجاح!' : '❌ عذراً، تم رفض حسابك كبائع.';
+                document.getElementById('notification-simulator-body').innerHTML = `
+                    <div class="bg-slate-950 p-4 rounded-xl border border-gray-800 space-y-2">
+                        <div class="text-emerald-400 font-bold">📧 إشعار البريد الإلكتروني (Email):</div>
+                        <p class="text-gray-300">إلى: <strong>${u.email}</strong></p>
+                        <p class="text-white bg-slate-900 p-2 rounded">${actionText} نتشرف بانضمامك لمنصة وسيط ماركت.</p>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-gray-800 space-y-2">
+                        <div class="text-blue-400 font-bold">📱 إشعار رسالة الهاتف (SMS):</div>
+                        <p class="text-gray-300">رقم الهاتف: <strong>${u.phone}</strong></p>
+                        <p class="text-white bg-slate-900 p-2 rounded">وسيط ماركت: ${actionText}</p>
+                    </div>
+                `;
+                document.getElementById('notification-simulator-modal').classList.remove('hidden');
+                showToast(status === 'approved' ? "تم اعتماد البائع وإرسال الإشعارات ✅" : "تم رفض البائع وإرسال الإشعار ❌");
             }
+        }
+
+        function closeNotificationSimulator() {
+            document.getElementById('notification-simulator-modal').classList.add('hidden');
         }
 
         function deleteUser(userId) {
@@ -1230,33 +1281,33 @@
             document.getElementById('admin-users-count').textContent = users.length + " مستخدم";
             document.getElementById('withdraw-available-amount').textContent = formatEGP(totalProfit);
 
-            // 1. جدول المستخدمين (معرفة المشترين والبائعين بوضوح)
-            document.getElementById('admin-users-tbody').innerHTML = users.length === 0 ? `<tr><td colspan="7" class="text-center py-4 text-gray-500">لا يوجد مستخدمون مسجلون.</td></tr>` : users.map(u => `
+            document.getElementById('admin-users-tbody').innerHTML = users.length === 0 ? `<tr><td colspan="6" class="text-center py-4 text-gray-500">لا يوجد مستخدمون مسجلون.</td></tr>` : users.map(u => `
                 <tr class="hover:bg-slate-900/60 transition">
                     <td class="py-3 px-4 font-bold text-white">${u.name}</td>
                     <td class="py-3 px-4">
                         ${u.role === 'buyer' ? '<span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-bold">🛒 مشتري</span>' : '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold">📦 بائع</span>'}
                     </td>
-                    <td class="py-3 px-4">${u.phone}</td>
-                    <td class="py-3 px-4">${u.email}</td>
+                    <td class="py-3 px-4">${u.phone}<br><span class="text-gray-400 text-[10px]">${u.email}</span></td>
                     <td class="py-3 px-4">
                         ${u.role === 'seller' ? `
                             <div class="space-y-1">
-                                <span class="block font-mono text-gray-300">القومي: ${u.nationalId}</span>${u.idCardImage ? `<button onclick="viewIdCardModal('${u.name}', '${u.idCardImage}')" class="bg-amber-600 text-white px-2 py-0.5 rounded font-bold cursor-pointer">معاينة البطاقة</button>` : '<span class="text-gray-500">لا توجد بطاقة</span>'}
+                                <span class="block font-mono text-gray-300">القومي: ${u.nationalId}</span>${u.idCardImage ? `<button onclick="viewIdCardModal('${u.name}', '${u.idCardImage}')" class="bg-amber-600 hover:bg-amber-500 text-white px-2 py-0.5 rounded font-bold cursor-pointer">معاينة البطاقة</button>` : '<span class="text-gray-500">لا توجد بطاقة</span>'}
                             </div>
                         ` : '<span class="text-blue-400 font-bold">حساب مشتري مسجل</span>'}
                     </td>
                     <td class="py-3 px-4">
-                        ${u.role === 'seller' ? (u.status === 'approved' ? '<span class="text-emerald-400 font-bold">✅ معتمد</span>' : '<span class="text-amber-400 font-bold">⏳ قيد الفحص</span>') : '<span class="text-emerald-400 font-bold">نشط</span>'}
+                        ${u.role === 'seller' ? (u.status === 'approved' ? '<span class="text-emerald-400 font-bold">✅ معتمد</span>' : (u.status === 'rejected' ? '<span class="text-red-400 font-bold">❌ مرفوض</span>' : '<span class="text-amber-400 font-bold">⏳ قيد الفحص</span>')) : '<span class="text-emerald-400 font-bold">نشط</span>'}
                     </td>
-                    <td class="py-3 px-4 flex items-center gap-2">
-                        ${u.role === 'seller' ? (u.status !== 'approved' ? `<button onclick="updateUserStatus(${u.id}, 'approved')" class="bg-emerald-500 text-slate-950 px-2 py-1 rounded font-black cursor-pointer">تفعيل</button>` : `<button onclick="updateUserStatus(${u.id}, 'pending')" class="bg-gray-800 text-gray-300 px-2 py-1 rounded cursor-pointer">إيقاف</button>`) : ''}
-                        <button onclick="deleteUser(${u.id})" class="bg-red-500/20 text-red-400 px-2 py-1 rounded font-bold cursor-pointer">حذف</button>
+                    <td class="py-3 px-4 flex items-center gap-1.5 flex-wrap">
+                        ${u.role === 'seller' ? `
+                            <button onclick="updateUserStatus(${u.id}, 'approved')" class="bg-emerald-500 text-slate-950 px-2 py-1 rounded font-black cursor-pointer">اعتماد وتفعيل</button>
+                            <button onclick="updateUserStatus(${u.id}, 'rejected')" class="bg-red-600 text-white px-2 py-1 rounded font-bold cursor-pointer">رفض</button>
+                        ` : ''}
+                        <button onclick="deleteUser(${u.id})" class="bg-gray-800 text-gray-300 px-2 py-1 rounded font-bold cursor-pointer">حذف</button>
                     </td>
                 </tr>
             `).join('');
 
-            // 2. المنتجات المعروضة
             document.getElementById('admin-products-tbody').innerHTML = products.length === 0 ? `<tr><td colspan="5" class="text-center py-4 text-gray-500">لا توجد منتجات معروضة.</td></tr>` : products.map(p => `
                 <tr class="hover:bg-slate-900/60 transition">
                     <td class="py-3 px-4 font-bold text-white flex items-center gap-2"><img src="${p.image}" class="w-10 h-10 rounded-lg object-cover"> ${p.title}</td>
@@ -1267,7 +1318,6 @@
                 </tr>
             `).join('');
 
-            // 3. الطلبات والحوالات وإدارة الاسترجاع
             document.getElementById('admin-transactions-tbody').innerHTML = transactions.length === 0 ? `<tr><td colspan="7" class="text-center py-4 text-gray-500">لا توجد طلبات شراء.</td></tr>` : transactions.map((t, i) => `
                 <tr>
                     <td class="py-2.5 px-3 font-mono">${t.txId}</td>
