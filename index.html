@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>وسيط ماركت | سوق البيع والشراء المضمون</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #090d16;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.88);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-emerald-500 selection:text-white min-h-screen flex flex-col">
+
+    <!-- الهيدر الرئيسي -->
+    <header class="glass-card border-b border-gray-800/80 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+            <!-- الشعار -->
+            <div onclick="switchTab('marketplace')" class="flex items-center gap-3 cursor-pointer group shrink-0">
+                <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-slate-950 font-black text-xl sm:text-2xl shadow-lg group-hover:scale-105 transition">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                        وسيط ماركت
+                        <span class="hidden sm:inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">حماية 100%</span>
+                    </h1>
+                    <p class="text-[11px] text-gray-400 hidden sm:block">المنصة الآمنة لبيع وشراء الكتب والأجهزة والمقتنيات</p>
+                </div>
+            </div>
+
+            <!-- التنقل الرئيسي -->
+            <nav class="hidden lg:flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-2xl border border-gray-800">
+                <button onclick="switchTab('marketplace')" class="nav-btn px-4 py-2 rounded-xl text-xs xl:text-sm font-bold transition flex items-center gap-2 bg-emerald-600 text-white shadow cursor-pointer">
+                    <span>🛒 تصفح المتجر</span>
+                </button>
+                <button onclick="switchTab('seller')" class="nav-btn px-4 py-2 rounded-xl text-xs xl:text-sm font-bold text-gray-300 hover:text-white hover:bg-gray-800/60 transition flex items-center gap-2 cursor-pointer">
+                    <span>📦 اعرض قطعتك للبيع</span>
+                </button>
+                <button onclick="switchTab('auth')" class="nav-btn px-4 py-2 rounded-xl text-xs xl:text-sm font-bold text-gray-300 hover:text-white hover:bg-gray-800/60 transition flex items-center gap-2 cursor-pointer">
+                    <span>🔐 حسابي / الدخول</span>
+                </button>
+            </nav>
+
+            <!-- حالة المستخدم وزر البيع -->
+            <div class="flex items-center gap-2">
+                <div id="header-user-pill" onclick="switchTab('auth')" class="cursor-pointer bg-slate-900 hover:bg-slate-800 border border-gray-700 px-3 py-2 rounded-xl flex items-center gap-2 transition">
+                    <i class="fa-solid fa-user-circle text-emerald-400 text-base"></i>
+                    <div class="text-right">
+                        <span id="header-user-name" class="block text-xs font-bold text-white leading-none">تسجيل الدخول</span>
+                        <span id="header-user-role" class="block text-[10px] text-gray-400 mt-0.5">اضغط للدخول أو التسجيل</span>
+                    </div>
+                </div>
+
+                <button onclick="switchTab('seller')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span class="hidden sm:inline">بيع قطعة</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- شريط تنقل للموبايل -->
+        <div class="flex lg:hidden border-t border-gray-800 bg-slate-950/95 px-2 py-2 justify-around text-xs font-bold">
+            <button onclick="switchTab('marketplace')" class="px-3 py-1.5 rounded-xl text-emerald-400 bg-emerald-500/15 flex items-center gap-1 cursor-pointer">🛒 المتجر</button>
+            <button onclick="switchTab('seller')" class="px-3 py-1.5 rounded-xl text-gray-300 flex items-center gap-1 cursor-pointer">📦 بيع قطعة</button>
+            <button onclick="switchTab('auth')" class="px-3 py-1.5 rounded-xl text-gray-300 flex items-center gap-1 cursor-pointer">🔐 حسابي</button>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ==================== 0. صفحة تسجيل الدخول وإنشاء الحساب والاستعادة ==================== -->
+        <section id="tab-auth" class="hidden space-y-8">
+            <div class="max-w-2xl mx-auto">
+                <div id="logged-in-profile-banner" class="hidden mb-6 glass-card rounded-3xl p-6 border border-emerald-500/40 bg-emerald-950/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-2xl font-black">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 id="profile-banner-name" class="text-lg font-black text-white"></h3>
+                                <span id="profile-banner-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold"></span>
+                            </div>
+                            <p id="profile-banner-details" class="text-xs text-gray-300 mt-1"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button onclick="switchTab('seller')" class="flex-1 sm:flex-initial bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs cursor-pointer">صفحة البيع</button>
+                        <button onclick="logoutUser()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer">خروج</button>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-3xl border border-gray-800 p-6 sm:p-8 shadow-2xl space-y-6">
+                    <div class="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-gray-800 text-xs sm:text-sm font-bold">
+                        <button type="button" onclick="switchAuthSubView('login')" id="auth-tab-login" class="py-2.5 rounded-xl bg-emerald-500 text-slate-950 transition cursor-pointer">🔑 تسجيل الدخول</button>
+                        <button type="button" onclick="switchAuthSubView('register')" id="auth-tab-register" class="py-2.5 rounded-xl text-gray-300 hover:text-white transition cursor-pointer">📝 حساب جديد</button>
+                        <button type="button" onclick="switchAuthSubView('forgot')" id="auth-tab-forgot" class="py-2.5 rounded-xl text-gray-300 hover:text-amber-300 transition cursor-pointer">🔄 نسيت الرقم السري؟</button>
+                    </div>
+
+                    <!-- 1) نموذج تسجيل الدخول -->
+                    <form id="form-auth-login" onsubmit="handleUserLogin(event)" class="space-y-4">
+                        <div>
+                            <h3 class="text-xl font-black text-white">تسجيل الدخول</h3>
+                            <p class="text-xs text-gray-400 mt-1">أدخل رقم التليفون والرقم السري الخاص بحسابك</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 mb-1.5">رقم التليفون *</label>
+                            <div class="relative">
+                                <input type="tel" id="login-phone" required placeholder="01012345678" class="w-full bg-slate-950 border border-gray-700 focus:border-emerald-500 rounded-xl pr-10 pl-4 py-3 text-sm text-white outline-none">
+                                <i class="fa-solid fa-phone absolute right-3.5 top-3.5 text-gray-500 text-sm"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-bold text-gray-300">الرقم السري *</label>
+                                <button type="button" onclick="switchAuthSubView('forgot')" class="text-xs font-bold text-amber-400 hover:underline cursor-pointer">نسيت الرقم السري؟</button>
+                            </div>
+                            <div class="relative">
+                                <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 focus:border-emerald-500 rounded-xl pr-10 pl-4 py-3 text-sm text-white outline-none">
+                                <i class="fa-solid fa-lock absolute right-3.5 top-3.5 text-gray-500 text-sm"></i>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-2 transition cursor-pointer">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>تسجيل الدخول الآن</span>
+                        </button>
+                    </form>
+
+                    <!-- 2) نموذج إنشاء حساب -->
+                    <form id="form-auth-register" onsubmit="handleUserRegister(event)" class="hidden space-y-4">
+                        <div>
+                            <h3 class="text-xl font-black text-white">إنشاء حساب جديد</h3>
+                            <p class="text-xs text-gray-400 mt-1">حدد نوع حسابك (مشتري أم بائع)</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-300 mb-2">اختر نوع الحساب *</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="reg-role" value="buyer" checked onchange="toggleSellerFields()" class="peer hidden">
+                                    <div class="p-3.5 rounded-2xl border border-gray-700 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/15 text-center transition">
+                                        <i class="fa-solid fa-cart-shopping text-emerald-400 text-lg mb-1 block"></i>
+                                        <span class="text-xs font-black text-white block">حساب مشتري</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="reg-role" value="seller" onchange="toggleSellerFields()" class="peer hidden">
+                                    <div class="p-3.5 rounded-2xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/15 text-center transition">
+                                        <i class="fa-solid fa-store text-amber-400 text-lg mb-1 block"></i>
+                                        <span class="text-xs font-black text-white block">حساب بائع</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 mb-1">الاسم الكامل *</label>
+                                <input type="text" id="reg-name" required placeholder="محمد أحمد" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 mb-1">رقم التليفون *</label>
+                                <input type="tel" id="reg-phone" required placeholder="010XXXXXXXX" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 mb-1">البريد الإلكتروني *</label>
+                                <input type="email" id="reg-email" required placeholder="user@domain.com" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 mb-1">الرقم السري *</label>
+                                <input type="password" id="reg-password" required minlength="4" placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                            </div>
+                        </div>
+
+                        <!-- حقول إضافية وبطاقة الهوية تظهر فقط عند اختيار بائع -->
+                        <div id="seller-extra-fields" class="hidden bg-amber-950/20 border border-amber-500/30 rounded-2xl p-4 space-y-3">
+                            <div class="text-amber-300 text-xs font-bold"><i class="fa-solid fa-id-card ml-1"></i> متطلبات حساب البائع (للمراجعة والموافقة من المالك):</div>
+                            <div>
+                                <label class="block text-[11px] text-gray-300 mb-1">الرقم القومي (14 رقم) *</label>
+                                <input type="text" id="reg-national-id" placeholder="2990101XXXXXXXXX" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-gray-300 mb-1">رفع صورة البطاقة الشخصية (الوجه الأمامي) *</label>
+                                <label class="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-amber-500/40 rounded-xl bg-slate-950 cursor-pointer p-2 text-center">
+                                    <input type="file" id="reg-id-card-file" accept="image/*" onchange="handleIdCardUpload(event)" class="hidden">
+                                    <span id="id-card-upload-label" class="text-amber-200 text-xs font-bold">اضغط لاختيار صورة البطاقة الشخصية</span>
+                                </label>
+                                <div id="id-card-preview-container" class="hidden mt-2 flex items-center justify-between bg-slate-900 p-2 rounded-xl text-xs">
+                                    <span class="text-emerald-400 font-bold">تم إرفاق صورة البطاقة الشخصية ✅</span>
+                                    <button type="button" onclick="clearIdCardUpload()" class="text-red-400 font-bold">حذف</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>إنشاء الحساب الآن</span>
+                        </button>
+                    </form>
+
+                    <!-- 3) استعادة الرقم السري -->
+                    <div id="form-auth-forgot" class="hidden space-y-5">
+                        <div>
+                            <h3 class="text-xl font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-key text-amber-400"></i>
+                                <span>استعادة وتغيير الرقم السري</span>
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-1">أدخل البريد الإلكتروني الذي سجلت به في الموقع</p>
+                        </div>
+                        <form onsubmit="verifyRecoveryEmail(event)" class="space-y-3">
+                            <label class="block text-xs font-bold text-gray-300">البريد الإلكتروني المسجل *</label>
+                            <div class="flex gap-2">
+                                <input type="email" id="recovery-email-input" required placeholder="أدخل إيميلك المسجل" class="flex-grow bg-slate-950 border border-gray-700 focus:border-amber-400 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                                <button type="submit" class="bg-amber-500 text-slate-950 font-black px-5 py-3 rounded-xl text-xs sm:text-sm shrink-0 cursor-pointer">تحقق</button>
+                            </div>
+                        </form>
+                        <form id="reset-password-box" onsubmit="saveNewRecoveredPassword(event)" class="hidden bg-emerald-950/20 border-2 border-emerald-500/40 rounded-2xl p-5 space-y-4">
+                            <div class="text-emerald-300 text-xs font-bold" id="recovery-matched-user-info">تم التحقق! أدخل الرقم السري الجديد:</div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <input type="password" id="new-reset-password" required placeholder="الرقم السري الجديد" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input type="password" id="confirm-reset-password" required placeholder="تأكيد الرقم السري" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-black py-3 rounded-xl text-sm cursor-pointer">حفظ الرقم السري وتسجيل الدخول</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 1. واجهة المتجر العام (للمشترين) ==================== -->
+        <section id="tab-marketplace" class="space-y-8">
+            <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950/50 to-slate-900 border border-emerald-500/30 p-6 sm:p-10 shadow-2xl">
+                <div class="max-w-3xl space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+                        <i class="fa-solid fa-shield-heart"></i>
+                        <span>سوق آمن ومضمون 100% — جميع البائعين مفحوصين ومعتمدين</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white leading-tight">
+                        اشترِ وبِع الكتب والأجهزة والمقتنيات <span class="text-emerald-400">بأمان تام</span>
+                    </h2>
+                    <p class="text-gray-300 text-sm sm:text-base leading-relaxed">
+                        تصفح المعروضات، حدد موقعك الجغرافي للاستلام، وسدد بسهولة عبر تطبيق <strong class="text-emerald-400">إنستا باي (InstaPay)</strong> على الرقم الرسمي <span class="font-mono text-emerald-300">01287252198</span>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- فلاتر البحث -->
+            <div class="glass-card p-4 sm:p-5 rounded-3xl border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="relative flex-grow w-full">
+                    <input type="text" id="search-input" oninput="renderProducts()" placeholder="ابحث عن كتاب، جهاز، أو بائع..." class="w-full bg-slate-950 border border-gray-700 focus:border-emerald-500 rounded-2xl pr-11 pl-4 py-3 text-sm text-white outline-none">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-gray-400"></i>
+                </div>
+                <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+                    <button onclick="filterCategory('all')" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-500 text-slate-950 whitespace-nowrap cursor-pointer">الكل (<span id="count-all">0</span>)</button>
+                    <button onclick="filterCategory('كتب')" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 text-gray-300 whitespace-nowrap cursor-pointer">📚 كتب</button>
+                    <button onclick="filterCategory('إلكترونيات')" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 text-gray-300 whitespace-nowrap cursor-pointer">💻 إلكترونيات</button>
+                    <button onclick="filterCategory('أجهزة')" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 text-gray-300 whitespace-nowrap cursor-pointer">📱 أجهزة</button>
+                    <button onclick="filterCategory('مقتنيات')" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 text-gray-300 whitespace-nowrap cursor-pointer">⌚ مقتنيات</button>
+                </div>
+            </div>
+
+            <!-- شبكة المنتجات -->
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <!-- ==================== 2. واجهة البائع (شرائح 10% و 5%) ==================== -->
+        <section id="tab-seller" class="hidden space-y-8">
+            <div class="text-center max-w-3xl mx-auto space-y-2">
+                <span class="px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold">
+                    <i class="fa-solid fa-store ml-1"></i> بوابة البائعين المعتمدة
+                </span>
+                <h2 class="text-2xl sm:text-4xl font-black text-white">اعرض كتابك أو قطعتك للبيع في دقائق</h2>
+                <p class="text-gray-400 text-sm">المشتري يرى السعر النهائي فقط، وهذه الصفحة توضح صافي مستحقاتك بعد الخصم التلقائي.</p>
+            </div>
+
+            <!-- شريط حالة فحص البائع -->
+            <div id="seller-kyc-gate" class="glass-card rounded-3xl p-6 border-2 border-amber-500/40 bg-amber-950/10 text-center space-y-4"></div>
+
+            <!-- مساحة العمل للبائع المعتمد -->
+            <div id="seller-approved-workspace" class="space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-6 rounded-3xl border-2 border-gray-800 relative">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300">أقل من 2,000 ج.م</span>
+                            <span class="text-xl font-black text-amber-400">عمولة 10%</span>
+                        </div>
+                        <p class="text-xs text-gray-300">للأعتاب والقطع أقل من 2000 جنيه، تخصم المنصة 10% وتستلم أنت 90%.</p>
+                    </div>
+                    <div class="glass-card p-6 rounded-3xl border-2 border-gray-800 relative">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300">2,000 ج.م فأكثر</span>
+                            <span class="text-xl font-black text-emerald-400">عمولة 5% فقط!</span>
+                        </div>
+                        <p class="text-xs text-gray-300">للأجهزة والقطع بـ 2000 ج.م فأكثر، تنخفض عمولة المنصة تلقائياً إلى 5% فقط!</p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-3xl border border-gray-800 p-6 sm:p-8 shadow-2xl">
+                    <form id="sell-form" onsubmit="submitNewItem(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-7 space-y-5">
+                            <h3 class="text-lg font-black text-white border-b border-gray-800 pb-3">1. بيانات الكتاب أو القطعة</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-300 mb-1">اسم القطعة أو الكتاب *</label>
+                                    <input type="text" id="item-title" required placeholder="رواية أو جهاز..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-300 mb-1">التصنيف *</label>
+                                    <select id="item-category" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                                        <option value="كتب">📚 كتب</option>
+                                        <option value="إلكترونيات">💻 إلكترونيات</option>
+                                        <option value="أجهزة">📱 أجهزة</option>
+                                        <option value="مقتنيات">⌚ مقتنيات</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-300 mb-1">اسمك كبائع *</label>
+                                    <input type="text" id="item-seller" required class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-300 mb-1">الحالة *</label>
+                                    <select id="item-condition" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                                        <option value="جديد تماماً">✨ جديد تماماً</option>
+                                        <option value="مستعمل كالجديد">👌 مستعمل كالجديد</option>
+                                        <option value="مستعمل بحالة جيدة">👍 بحالة جيدة</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 mb-1">رابط صورة (اختياري)</label>
+                                <input type="url" id="item-image" placeholder="https://..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-300 mb-1">وصف تفصيلي *</label>
+                                <textarea id="item-desc" rows="3" required placeholder="تفاصيل القطعة..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-2 text-sm text-white outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 bg-slate-950 border border-gray-800 rounded-3xl p-6 flex flex-col justify-between space-y-5">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                                    <h3 class="text-sm font-black text-white">2. السعر وصافي ربحك</h3>
+                                    <span id="seller-active-tier-badge" class="px-2 py-0.5 rounded text-xs bg-amber-500/20 text-amber-300">شريحة 10%</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-300 mb-2">السعر المطلوب (ج.م):</label>
+                                    <input type="number" id="item-price" required min="20" step="10" value="1000" oninput="updateSellerCalculator()" class="w-full bg-slate-900 border-2 border-emerald-500/60 rounded-2xl px-4 py-3 text-xl font-black text-white outline-none">
+                                </div>
+                                <div id="smart-tier-tip" class="hidden bg-amber-500/15 border border-amber-500/40 rounded-2xl p-3 text-xs text-amber-200"></div>
+                                <div class="bg-slate-900 rounded-2xl p-4 border border-gray-800 space-y-2 text-xs">
+                                    <div class="flex justify-between text-gray-300"><span>السعر للمشتري:</span><strong id="calc-display-price" class="text-white">1,000 ج.م</strong></div>
+                                    <div class="flex justify-between text-gray-300"><span>العمولة المطبقة:</span><strong id="calc-rate-text" class="text-amber-400">10%</strong></div>
+                                    <div class="flex justify-between text-gray-300"><span>صافي ربحك كبائع:</span><strong id="calc-seller-net" class="text-emerald-400 text-sm">900 ج.م</strong></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 rounded-2xl text-sm shadow-lg cursor-pointer">اعرض القطعة الآن</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. لوحة المالك الرسمية (Awad.alaa1 / 19980203) ==================== -->
+        <section id="tab-admin" class="hidden space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 p-6 rounded-3xl border border-emerald-500/40 shadow-xl">
+                <div>
+                    <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-2 inline-block">🔒 لوحة المالك الرسمية (Awad.alaa1)</span>
+                    <h2 class="text-2xl font-black text-white">إدارة المستخدمين (مشترين وبائعين)، الحوالات والأرباح</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openWithdrawModal()" class="bg-emerald-500 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs cursor-pointer">سحب أرباحي</button>
+                    <button onclick="lockAdminPanel()" class="bg-slate-800 text-gray-300 px-4 py-2.5 rounded-xl text-xs cursor-pointer">قفل اللوحة</button>
+                </div>
+            </div>
+
+            <!-- الإحصائيات -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="glass-card p-5 rounded-2xl border border-emerald-500/50 bg-emerald-950/20">
+                    <span class="text-emerald-300 text-xs font-bold block mb-1">صافي أرباحك كمالك</span>
+                    <div id="admin-owner-profit" class="text-2xl font-black text-emerald-400">0 ج.م</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border border-gray-800">
+                    <span class="text-gray-400 text-xs font-bold block mb-1">إجمالي المبيعات</span>
+                    <div id="admin-total-sales" class="text-2xl font-black text-white">0 ج.م</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border border-amber-500/30">
+                    <span class="text-amber-300 text-xs font-bold block mb-1">مستحقات البائعين</span>
+                    <div id="admin-seller-dues" class="text-2xl font-black text-amber-400">0 ج.م</div>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border border-purple-500/30">
+                    <span class="text-purple-300 text-xs font-bold block mb-1">إجمالي المستخدمين</span>
+                    <div id="admin-users-count" class="text-2xl font-black text-purple-400">0 مستخدم</div>
+                </div>
+            </div>
+
+            <!-- جدول إدارة المستخدمين -->
+            <div class="glass-card rounded-3xl p-6 border border-amber-500/30 space-y-4">
+                <h3 class="text-base font-black text-white flex items-center justify-between">
+                    <span>1. إدارة جميع المستخدمين (مشترين وبائعين) وفحص هويات البائعين</span>
+                    <span class="text-xs text-amber-400 font-normal">معاينة بطاقات الهوية للبائعين الجدد والتفعيل</span>
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-gray-400 bg-slate-900">
+                                <th class="py-3 px-4">اسم المستخدم</th>
+                                <th class="py-3 px-4">نوع الحساب</th>
+                                <th class="py-3 px-4">التليفون</th>
+                                <th class="py-3 px-4">الإيميل</th>
+                                <th class="py-3 px-4">الرقم القومي والبطاقة</th>
+                                <th class="py-3 px-4">الحالة</th>
+                                <th class="py-3 px-4">إجراءات المالك</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-tbody" class="divide-y divide-gray-800"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- جدول الطلبات والحوالات -->
+            <div class="glass-card rounded-3xl p-6 border border-gray-800 space-y-4">
+                <h3 class="text-base font-black text-white">2. سجل الطلبات، إيصالات InstaPay، والموقع الجغرافي</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead>
+                            <tr class="border-b border-gray-800 text-gray-400 bg-slate-900">
+                                <th class="py-3 px-3">الطلب</th>
+                                <th class="py-3 px-3">القطعة</th>
+                                <th class="py-3 px-3">المشتري وموقعه</th>
+                                <th class="py-3 px-3">إيصال الحوالة</th>
+                                <th class="py-3 px-3">السعر</th>
+                                <th class="py-3 px-3">ربحك</th>
+                                <th class="py-3 px-3">تحويل للبائع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-transactions-tbody" class="divide-y divide-gray-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- نافذة الدفع للمشتري -->
+    <div id="checkout-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-gray-700 rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-5 my-8">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+                <h3 class="text-base font-black text-white">إتمام الشراء، تحديد الموقع، والسداد</h3>
+                <button onclick="closeCheckoutModal()" class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="checkout-item-summary" class="bg-slate-950 p-3 rounded-2xl border border-gray-800 flex items-center gap-3"></div>
+            
+            <form id="checkout-form" onsubmit="confirmPurchase(event)" class="space-y-4 text-xs">
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-gray-800 space-y-2">
+                    <span class="font-bold text-emerald-400">أولاً: بيانات المشتري</span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="buyer-name" required placeholder="الاسم الكامل" class="bg-slate-900 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                        <input type="tel" id="buyer-phone" required placeholder="رقم التليفون" class="bg-slate-900 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 p-3.5 rounded-2xl border border-blue-500/30 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-blue-400">ثانياً: تحديد الموقع الجغرافي للاستلام (GPS) *</span>
+                        <span id="geo-status-badge" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">مطلوب تحديد الموقع</span>
+                    </div>
+                    <button type="button" onclick="captureBuyerGeolocation()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl cursor-pointer">
+                        📍 تحديد موقعي الجغرافي الحالي تلقائياً (GPS)
+                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="buyer-gps-coords" required placeholder="الإحداثيات..." class="bg-slate-900 border border-gray-700 rounded-xl px-3 py-2 text-blue-300 font-mono outline-none">
+                        <input type="text" id="buyer-address" required placeholder="العنوان بالتفصيل (الشارع/المنطقة)" class="bg-slate-900 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-purple-950/30 p-4 rounded-2xl border border-purple-500/40 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-purple-300">ثالثاً: التحويل عبر InstaPay على الرقم:</span>
+                        <span class="font-mono font-black text-emerald-400 text-sm">01287252198</span>
+                    </div>
+                    <button type="button" onclick="copyInstaPayNumber()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-xl font-bold cursor-pointer"><i class="fa-regular fa-copy ml-1"></i> نسخ رقم إنستا باي</button>
+                    
+                    <div>
+                        <label class="block font-bold text-amber-300 mb-1">إرفاق صورة إيصال التحويل (إلزامي) *</label>
+                        <label class="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-700 rounded-xl bg-slate-950 cursor-pointer p-2 text-center">
+                            <input type="file" id="receipt-file-input" accept="image/*,.pdf" onchange="handleReceiptUpload(event)" class="hidden">
+                            <span id="receipt-upload-label" class="text-gray-300">اضغط لاختيار صورة إيصال التحويل</span>
+                        </label>
+                        <div id="receipt-preview-container" class="hidden mt-2 flex items-center justify-between bg-slate-900 p-2 rounded-xl">
+                            <span id="receipt-file-name" class="text-emerald-400 font-bold">تم إرفاق الإيصال ✅</span>
+                            <button type="button" onclick="clearReceiptUpload()" class="text-red-400 font-bold">حذف</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 rounded-2xl text-sm cursor-pointer shadow-lg">تأكيد إرسال الحوالة والموقع وإتمام الشراء</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل دخول المالك (Awad.alaa1 / 19980203) -->
+    <div id="pin-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-gray-700 rounded-3xl max-w-sm w-full p-6 text-center space-y-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mx-auto"><i class="fa-solid fa-user-lock"></i></div>
+            <h3 class="text-lg font-black text-white">تسجيل دخول المالك 🔒</h3>
+            <form onsubmit="verifyAdminCredentials(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-right text-gray-400 mb-1 font-bold">اسم المستخدم للمالك *</label>
+                    <input type="text" id="admin-user-input" required placeholder="أدخل اسم المستخدم" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2.5 text-center text-white outline-none font-mono">
+                </div>
+                <div>
+                    <label class="block text-right text-gray-400 mb-1 font-bold">الرقم السري *</label>
+                    <input type="password" id="admin-pin-input" required placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2.5 text-center text-white outline-none">
+                </div>
+                <p id="pin-error-msg" class="text-red-400 hidden font-bold">اسم المستخدم أو الرقم السري غير صحيح!</p>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closePinModal()" class="w-1/2 py-2.5 bg-gray-800 text-gray-300 rounded-xl cursor-pointer">إلغاء</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-amber-500 text-slate-950 font-black rounded-xl cursor-pointer">دخول</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة معاينة المستند أو البطاقة -->
+    <div id="receipt-viewer-modal" class="fixed inset-0 z-50 hidden bg-black/85 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-gray-700 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                <h3 id="receipt-viewer-title" class="font-black text-white">معاينة المستند</h3>
+                <button onclick="closeReceiptViewerModal()" class="text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="receipt-viewer-body" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <!-- نافذة سحب الأرباح للمالك -->
+    <div id="withdraw-modal" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-gray-700 rounded-3xl max-w-sm w-full p-6 space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2"><h3 class="font-black text-white">سحب أرباحك الصافية</h3><button onclick="closeWithdrawModal()" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="bg-emerald-950/30 p-3 rounded-xl text-center"><span class="text-gray-400 block">المتاح للسحب</span><span id="withdraw-available-amount" class="text-2xl font-black text-emerald-400">0 ج.م</span></div>
+            <input type="text" id="owner-payout-number" placeholder="رقم محفظتك (فودافون كاش / إنستا باي)" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2.5 text-white outline-none">
+            <button onclick="processWithdraw()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">تأكيد سحب الأرباح</button>
+        </div>
+    </div>
+
+    <!-- إشعار عائم -->
+    <div id="toast-box" class="fixed bottom-5 left-5 z-50 hidden max-w-sm bg-slate-900 border-2 border-emerald-500 text-white p-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-black"><i class="fa-solid fa-check"></i></div>
+        <div><h4 id="toast-title" class="font-black text-emerald-400">تمت العملية</h4><p id="toast-msg" class="text-gray-200"></p></div>
+    </div>
+
+    <!-- الفوتر مع زر الدخول للوحة المالك -->
+    <footer class="border-t border-gray-800 bg-slate-950 py-5 px-4 text-xs text-gray-500 mt-auto">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span>وسيط ماركت — جميع الحقوق محفوظة © 2025</span>
+            <button onclick="requestAdminAccess()" class="text-gray-400 hover:text-amber-400 font-bold transition flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-lock text-[10px]"></i> إدارة المنصة (المالك: Awad.alaa1) 🔒
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        let currentCategoryFilter = 'all';
+        let selectedCheckoutItemId = null;
+        let isAdminUnlocked = false;
+        const ADMIN_USER_CONFIG = "Awad.alaa1";
+        const ADMIN_PASS_CONFIG = "19980203";
+        const INSTAPAY_NUMBER = "01287252198";
+
+        let uploadedReceiptDataUrl = null;
+        let uploadedReceiptName = "";
+        let uploadedIdCardDataUrl = null;
+        let recoveredUserAccount = null;
+
+        // تحميل البيانات الحقيقية من التخزين الدائم للمتصفح (localStorage)
+        let users = JSON.parse(localStorage.getItem('waseet_users')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('waseet_current_user')) || null;
+        let products = JSON.parse(localStorage.getItem('waseet_products')) || [
+            { id: 1, title: "مجموعة روايات تاريخية (5 كتب أصلية)", category: "كتب", seller: "إدارة المتجر", price: 450, condition: "جديد تماماً", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80", desc: "روايات أصلية فاخرة." },
+            { id: 2, title: "جهاز قارئ كتب Kindle Paperwhite", category: "أجهزة", seller: "إدارة المتجر", price: 2000, condition: "مستعمل كالجديد", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80", desc: "شاشة مريحة للعين وبطارية تدوم لأسابيع." }
+        ];
+        let transactions = JSON.parse(localStorage.getItem('waseet_transactions')) || [];
+
+        function saveDataToStorage() {
+            localStorage.setItem('waseet_users', JSON.stringify(users));
+            localStorage.setItem('waseet_current_user', JSON.stringify(currentUser));
+            localStorage.setItem('waseet_products', JSON.stringify(products));
+            localStorage.setItem('waseet_transactions', JSON.stringify(transactions));
+        }
+
+        function getCommissionDetails(price) {
+            const numericPrice = parseFloat(price) || 0;
+            const rate = numericPrice >= 2000 ? 5 : 10;
+            const fee = (numericPrice * rate) / 100;
+            const sellerNet = numericPrice - fee;
+            return { price: numericPrice, rate, fee, sellerNet };
+        }
+
+        function formatEGP(num) {
+            return Number(num).toLocaleString('ar-EG') + " ج.م";
+        }
+
+        function updateHeaderUserUI() {
+            const nameEl = document.getElementById('header-user-name');
+            const roleEl = document.getElementById('header-user-role');
+            const banner = document.getElementById('logged-in-profile-banner');
+            if (!currentUser) {
+                nameEl.textContent = "تسجيل الدخول";
+                roleEl.textContent = "برقم التليفون والباسورد";
+                if (banner) banner.classList.add('hidden');
+            } else {
+                nameEl.textContent = currentUser.name;
+                roleEl.textContent = currentUser.role === 'buyer' ? "حساب مشتري 🛒" : (currentUser.status === 'approved' ? "حساب بائع معتمد ✅" : "حساب بائع قيد الفحص ⏳");
+                if (banner) {
+                    banner.classList.remove('hidden');
+                    document.getElementById('profile-banner-name').textContent = currentUser.name;
+                    document.getElementById('profile-banner-badge').textContent = currentUser.role === 'buyer' ? "مشتري" : (currentUser.status === 'approved' ? "بائع معتمد" : "قيد الفحص");
+                    document.getElementById('profile-banner-badge').className = `px-2.5 py-0.5 rounded-full text-xs font-bold ${currentUser.role === 'buyer' ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'}`;
+                    document.getElementById('profile-banner-details').textContent = `نوع الحساب: ${currentUser.role === 'buyer' ? 'مشتري' : 'بائع'} | تليفون: ${currentUser.phone} | إيميل: ${currentUser.email}`;
+                }
+            }
+            updateSellerKycGateUI();
+        }
+
+        function switchAuthSubView(view) {
+            ['login', 'register', 'forgot'].forEach(v => {
+                const el = document.getElementById('form-auth-' + v);
+                if (el) el.classList.add('hidden');
+                const tabEl = document.getElementById('auth-tab-' + v);
+                if (tabEl) tabEl.className = "py-2.5 rounded-xl text-gray-300 transition cursor-pointer";
+            });
+            const targetForm = document.getElementById('form-auth-' + view);
+            if (targetForm) targetForm.classList.remove('hidden');
+            const targetTab = document.getElementById('auth-tab-' + view);
+            if (targetTab) targetTab.className = "py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black transition cursor-pointer";
+        }
+
+        function toggleSellerFields() {
+            const roleVal = document.querySelector('input[name="reg-role"]:checked').value;
+            const isSeller = roleVal === 'seller';
+            document.getElementById('seller-extra-fields').classList.toggle('hidden', !isSeller);
+            const natIdInput = document.getElementById('reg-national-id');
+            if (natIdInput) natIdInput.required = isSeller;
+        }
+
+        function handleIdCardUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                uploadedIdCardDataUrl = evt.target.result;
+                document.getElementById('id-card-preview-container').classList.remove('hidden');
+                document.getElementById('id-card-upload-label').textContent = "تم إرفاق صورة البطاقة الشخصية ✅";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearIdCardUpload() {
+            uploadedIdCardDataUrl = null;
+            document.getElementById('reg-id-card-file').value = "";
+            document.getElementById('id-card-preview-container').classList.add('hidden');
+            document.getElementById('id-card-upload-label').textContent = "اضغط لاختيار صورة البطاقة الشخصية";
+        }
+
+        function handleUserLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('login-phone').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            const found = users.find(u => u.phone === phone && u.password === pass);
+            if (!found) {
+                showToast("خطأ في البيانات ⚠️", "تأكد من رقم التليفون والرقم السري.");
+                return;
+            }
+            currentUser = found;
+            saveDataToStorage();
+            updateHeaderUserUI();
+            switchTab(found.role === 'seller' ? 'seller' : 'marketplace');
+            showToast("مرحباً بك!", `أهلاً يا ${found.name} (${found.role === 'buyer' ? 'مشتري' : 'بائع'})`);
+        }
+
+        function handleUserRegister(e) {
+            e.preventDefault();
+            const role = document.querySelector('input[name="reg-role"]:checked').value;
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+
+            if (users.some(u => u.phone === phone)) {
+                showToast("رقم التليفون مسجل مسبقاً ⚠️", "استخدم رقم تليفون آخر.");
+                return;
+            }
+
+            let nationalId = "-";
+            let idCardImage = "";
+            if (role === 'seller') {
+                nationalId = document.getElementById('reg-national-id').value.trim();
+                if (!uploadedIdCardDataUrl) {
+                    showToast("مطلوب بطاقة الهوية ⚠️", "يجب رفع صورة البطاقة الشخصية للبائعين عند التسجيل لأول مرة.");
+                    return;
+                }
+                idCardImage = uploadedIdCardDataUrl;
+            }
+
+            const newUser = {
+                id: Date.now(), name, phone, email, password, role,
+                status: role === 'seller' ? 'pending' : 'approved',
+                nationalId, idCardImage
+            };
+            users.unshift(newUser);
+            currentUser = newUser;
+            saveDataToStorage();
+            updateHeaderUserUI();
+            updateAdminDashboard();
+            switchTab(role === 'seller' ? 'seller' : 'marketplace');
+            showToast("تم إنشاء الحساب بنجاح 🎉", role === 'seller' ? "حسابك كبائع قيد الفحص والمراجعة من المالك." : "أهلاً بك كمشتري.");
+        }
+
+        function verifyRecoveryEmail(e) {
+            e.preventDefault();
+            const email = document.getElementById('recovery-email-input').value.trim().toLowerCase();
+            const matched = users.find(u => u.email.toLowerCase() === email);
+            const resetBox = document.getElementById('reset-password-box');
+            if (!matched) {
+                resetBox.classList.add('hidden');
+                showToast("الإيميل غير مسجل ⚠️", "تأكد من إيميلك المسجل.");
+                return;
+            }
+            recoveredUserAccount = matched;
+            document.getElementById('recovery-matched-user-info').textContent = `تم التحقق من الحساب (${matched.name} - ${matched.role === 'buyer' ? 'مشتري' : 'بائع'})! أدخل الرقم السري الجديد:`;
+            resetBox.classList.remove('hidden');
+        }
+
+        function saveNewRecoveredPassword(e) {
+            e.preventDefault();
+            if (!recoveredUserAccount) return;
+            const p1 = document.getElementById('new-reset-password').value;
+            const p2 = document.getElementById('confirm-reset-password').value;
+            if (p1 !== p2) {
+                showToast("خطأ", "الرقمان غير متطابقين.");
+                return;
+            }
+            recoveredUserAccount.password = p1;
+            currentUser = recoveredUserAccount;
+            saveDataToStorage();
+            updateHeaderUserUI();
+            switchAuthSubView('login');
+            showToast("تم تغيير الرقم السري بنجاح 🔐", "سجل دخولك الآن.");
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            saveDataToStorage();
+            updateHeaderUserUI();
+            switchAuthSubView('login');
+            showToast("تم خروجك", "نتشرف بزيارتك دائماً.");
+        }
+
+        function updateSellerKycGateUI() {
+            const gate = document.getElementById('seller-kyc-gate');
+            const ws = document.getElementById('seller-approved-workspace');
+            const sellerInput = document.getElementById('item-seller');
+            if (!gate || !ws) return;
+
+            if (!currentUser || currentUser.role !== 'seller') {
+                ws.classList.add('opacity-40', 'pointer-events-none');
+                gate.innerHTML = `
+                    <h3 class="text-lg font-black text-white">هذه الصفحة خاصة بالبائعين فقط</h3>
+                    <p class="text-xs text-gray-300 mt-1">يجب تسجيل حساب كـ "بائع" ورفع بطاقتك الشخصية وموافقة المالك لتتمكن من عرض قطعتك.</p>
+                    <button onclick="switchTab('auth'); switchAuthSubView('register');" class="mt-2 bg-emerald-500 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs cursor-pointer">إنشاء حساب بائع الآن</button>
+                `;
+            } else if (currentUser.status !== 'approved') {
+                ws.classList.add('opacity-40', 'pointer-events-none');
+                gate.innerHTML = `
+                    <h3 class="text-lg font-black text-amber-400">حسابك كبائع قيد الفحص والمراجعة من المالك ⏳</h3>
+                    <p class="text-xs text-gray-300 mt-1">راجع المالك حسابك وبطاقتك الشخصية المرفوعة وسيتم تفعيلك قريباً.</p>
+                `;
+            } else {
+                ws.classList.remove('opacity-40', 'pointer-events-none');
+                if (sellerInput) sellerInput.value = currentUser.name;
+                gate.innerHTML = `<h3 class="text-sm font-bold text-emerald-400">حساب بائع معتمد ومفعل: ${currentUser.name} ✅</h3>`;
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            document.getElementById('count-all').textContent = products.length;
+
+            const filtered = products.filter(i => (currentCategoryFilter === 'all' || i.category === currentCategoryFilter) && (i.title.toLowerCase().includes(search) || i.seller.toLowerCase().includes(search)));
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 glass-card rounded-3xl border border-gray-800 text-gray-400">لا توجد معروضات مطابقة.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => `
+                <div class="glass-card rounded-3xl border border-gray-800 hover:border-emerald-500/50 transition overflow-hidden flex flex-col justify-between shadow-lg">
+                    <div>
+                        <div class="relative h-48 w-full bg-slate-900 overflow-hidden">
+                            <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=وسيط+ماركت'" class="w-full h-full object-cover">
+                            <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-slate-950 text-emerald-400 border border-emerald-500/30">${item.category}</span>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-extrabold text-white text-sm sm:text-base">${item.title}</h3>
+                            <p class="text-xs text-gray-400 line-clamp-2">${item.desc}</p>
+                            <div class="text-xs text-gray-400">البائع: <strong class="text-gray-200">${item.seller}</strong></div>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0 flex items-center justify-between border-t border-gray-800 mt-2 pt-3">
+                        <span class="text-lg font-black text-white">${formatEGP(item.price)}</span>
+                        <button onclick="openCheckoutModal(${item.id})" class="bg-emerald-500 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow cursor-pointer">شراء الآن</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            currentCategoryFilter = cat;
+            renderProducts();
+        }
+
+        function updateSellerCalculator() {
+            const price = parseFloat(document.getElementById('item-price').value) || 0;
+            const comm = getCommissionDetails(price);
+            document.getElementById('calc-display-price').textContent = formatEGP(comm.price);
+            document.getElementById('calc-rate-text').textContent = comm.rate + "%";
+            document.getElementById('calc-seller-net').textContent = formatEGP(comm.sellerNet);
+            document.getElementById('seller-active-tier-badge').textContent = `شريحة ${comm.rate}%`;
+
+            const tip = document.getElementById('smart-tier-tip');
+            if (price >= 1600 && price < 2000) {
+                tip.classList.remove('hidden');
+                tip.innerHTML = `💡 نصيحة: إذا جعلت السعر <strong>2,000 ج.م</strong> ستنخفض عمولة الموقع إلى <strong>5% فقط</strong> وتحصل على ${formatEGP(1900)}!`;
+            } else {
+                tip.classList.add('hidden');
+            }
+        }
+
+        function submitNewItem(e) {
+            e.preventDefault();
+            if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
+                showToast("غير مسموح", "يجب أن يكون حسابك بائعاً ومعتمداً من المالك لرفع المنتجات.");
+                return;
+            }
+            const title = document.getElementById('item-title').value.trim();
+            const category = document.getElementById('item-category').value;
+            const seller = currentUser.name;
+            const condition = document.getElementById('item-condition').value;
+            const price = parseFloat(document.getElementById('item-price').value) || 1000;
+            const image = document.getElementById('item-image').value.trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
+            const desc = document.getElementById('item-desc').value.trim();
+
+            products.unshift({ id: Date.now(), title, category, seller, price, condition, image, desc });
+            saveDataToStorage();
+            renderProducts();
+            switchTab('marketplace');
+            showToast("تم النشر بنجاح!", `تم عرض "${title}" في المتجر.`);
+        }
+
+        function openCheckoutModal(id) {
+            const item = products.find(p => p.id === id);
+            if (!item) return;
+            selectedCheckoutItemId = id;
+            if (currentUser) {
+                document.getElementById('buyer-name').value = currentUser.name;
+                document.getElementById('buyer-phone').value = currentUser.phone;
+            }
+            document.getElementById('checkout-item-summary').innerHTML = `
+                <img src="${item.image}" class="w-12 h-12 rounded-lg object-cover">
+                <div class="flex-grow"><h4 class="font-bold text-white text-xs">${item.title}</h4><span class="text-gray-400">البائع: ${item.seller}</span></div>
+                <strong class="text-emerald-400">${formatEGP(item.price)}</strong>
+            `;
+            clearReceiptUpload();
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() { document.getElementById('checkout-modal').classList.add('hidden'); }
+
+        function captureBuyerGeolocation() {
+            const badge = document.getElementById('geo-status-badge');
+            badge.textContent = "جاري الجلب...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('buyer-gps-coords').value = `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+                    badge.textContent = "تم التحديد ✅";
+                }, () => {
+                    document.getElementById('buyer-gps-coords').value = "30.0444, 31.2357 (القاهرة)";
+                    badge.textContent = "تم التحديد ✅";
+                });
+            } else {
+                document.getElementById('buyer-gps-coords').value = "30.0444, 31.2357 (القاهرة)";
+                badge.textContent = "تم التحديد ✅";
+            }
+        }
+
+        function copyInstaPayNumber() {
+            const inp = document.createElement('input');
+            inp.value = INSTAPAY_NUMBER;
+            document.body.appendChild(inp);
+            inp.select();
+            document.execCommand('copy');
+            document.body.removeChild(inp);
+            showToast("تم النسخ 📋", "رقم إنستا باي: 01287252198");
+        }
+
+        function handleReceiptUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            uploadedReceiptName = file.name;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                uploadedReceiptDataUrl = evt.target.result;
+                document.getElementById('receipt-preview-container').classList.remove('hidden');
+                document.getElementById('receipt-upload-label').textContent = "تم إرفاق الإيصال ✅";
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearReceiptUpload() {
+            uploadedReceiptDataUrl = null;
+            document.getElementById('receipt-file-input').value = "";
+            document.getElementById('receipt-preview-container').classList.add('hidden');
+            document.getElementById('receipt-upload-label').textContent = "اضغط لاختيار صورة إيصال التحويل";
+        }
+
+        function confirmPurchase(e) {
+            e.preventDefault();
+            const item = products.find(p => p.id === selectedCheckoutItemId);
+            if (!item) return;
+            const buyerName = document.getElementById('buyer-name').value;
+            const buyerPhone = document.getElementById('buyer-phone').value;
+            const buyerLocation = document.getElementById('buyer-gps-coords').value;
+            const buyerAddress = document.getElementById('buyer-address').value;
+
+            if (!buyerLocation) { showToast("مطلوب", "حدد الموقع الجغرافي."); return; }
+            if (!uploadedReceiptDataUrl) { showToast("مطلوب", "أرفق إيصال التحويل على إنستا باي 01287252198."); return; }
+
+            const comm = getCommissionDetails(item.price);
+            transactions.unshift({
+                txId: "#ORD-" + Math.floor(704 + Math.random() * 290),
+                itemTitle: item.title, buyer: buyerName, buyerPhone, buyerLocation, buyerAddress,
+                receiptName: uploadedReceiptName || "Receipt.jpg", receiptImage: uploadedReceiptDataUrl,
+                seller: item.seller, totalPrice: item.price, rate: comm.rate, ownerProfit: comm.fee, sellerNet: comm.sellerNet, payoutStatus: "pending"
+            });
+            saveDataToStorage();
+            closeCheckoutModal();
+            updateAdminDashboard();
+            showToast("تم الطلب بنجاح! 🎉", "تم استلام الحوالة وموقعك الجغرافي.");
+        }
+
+        function requestAdminAccess() {
+            if (isAdminUnlocked) {
+                switchTab('admin');
+            } else {
+                document.getElementById('admin-user-input').value = '';
+                document.getElementById('admin-pin-input').value = '';
+                document.getElementById('pin-error-msg').classList.add('hidden');
+                document.getElementById('pin-modal').classList.remove('hidden');
+            }
+        }
+
+        function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
+
+        function verifyAdminCredentials(e) {
+            e.preventDefault();
+            const uInput = document.getElementById('admin-user-input').value.trim();
+            const pInput = document.getElementById('admin-pin-input').value.trim();
+            if (uInput === ADMIN_USER_CONFIG && pInput === ADMIN_PASS_CONFIG) {
+                isAdminUnlocked = true;
+                closePinModal();
+                switchTab('admin');
+                showToast("أهلاً بك يا مالك المنصة (Awad.alaa1) 🔓");
+            } else {
+                document.getElementById('pin-error-msg').classList.remove('hidden');
+            }
+        }
+
+        function lockAdminPanel() { isAdminUnlocked = false; switchTab('marketplace'); showToast("تم قفل لوحة المالك 🔒"); }
+
+        function updateUserStatus(userId, status) {
+            const u = users.find(user => user.id === userId);
+            if (u) {
+                u.status = status;
+                saveDataToStorage();
+                updateAdminDashboard();
+                updateHeaderUserUI();
+                showToast("تم تحديث حالة المستخدم بنجاح");
+            }
+        }
+
+        function updateAdminDashboard() {
+            let totalSales = 0, totalProfit = 0, totalDues = 0;
+            transactions.forEach(t => { totalSales += t.totalPrice; totalProfit += t.ownerProfit; totalDues += t.sellerNet; });
+
+            document.getElementById('admin-owner-profit').textContent = formatEGP(totalProfit);
+            document.getElementById('admin-total-sales').textContent = formatEGP(totalSales);
+            document.getElementById('admin-seller-dues').textContent = formatEGP(totalDues);
+            document.getElementById('admin-users-count').textContent = users.length + " مستخدم";
+            document.getElementById('withdraw-available-amount').textContent = formatEGP(totalProfit);
+
+            document.getElementById('admin-users-tbody').innerHTML = users.map(u => `
+                <tr class="hover:bg-slate-900/60 transition">
+                    <td class="py-3 px-4 font-bold text-white">${u.name}</td>
+                    <td class="py-3 px-4">
+                        ${u.role === 'buyer' ? '<span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-bold">🛒 مشتري</span>' : '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 font-bold">📦 بائع</span>'}
+                    </td>
+                    <td class="py-3 px-4">${u.phone}</td>
+                    <td class="py-3 px-4">${u.email}</td>
+                    <td class="py-3 px-4">
+                        ${u.role === 'seller' ? `
+                            <div class="space-y-1">
+                                <span class="block font-mono text-gray-300">القومي: ${u.nationalId}</span>${u.idCardImage ? `<button onclick="viewIdCardModal('${u.name}', '${u.idCardImage}')" class="bg-amber-600 hover:bg-amber-500 text-white px-2 py-0.5 rounded font-bold cursor-pointer">معاينة البطاقة الشخصية</button>` : '<span class="text-gray-500">لا توجد بطاقة مرفوعة</span>'}
+                            </div>
+                        ` : '<span class="text-gray-500">حساب مشتري</span>'}
+                    </td>
+                    <td class="py-3 px-4">
+                        ${u.role === 'seller' ? (u.status === 'approved' ? '<span class="text-emerald-400 font-bold">✅ معتمد</span>' : '<span class="text-amber-400 font-bold">⏳ قيد الفحص</span>') : '<span class="text-blue-400 font-bold">نشط</span>'}
+                    </td>
+                    <td class="py-3 px-4">
+                        ${u.role === 'seller' ? (u.status !== 'approved' ? `<button onclick="updateUserStatus(${u.id}, 'approved')" class="bg-emerald-500 text-slate-950 px-3 py-1.5 rounded font-black cursor-pointer">موافقة وتفعيل</button>` : `<button onclick="updateUserStatus(${u.id}, 'pending')" class="bg-gray-800 text-gray-300 px-3 py-1.5 rounded cursor-pointer">إيقاف</button>`) : '<span class="text-gray-500">-</span>'}
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('admin-transactions-tbody').innerHTML = transactions.map((t, i) => `
+                <tr>
+                    <td class="py-2.5 px-3 font-mono">${t.txId}</td>
+                    <td class="py-2.5 px-3"><strong>${t.itemTitle}</strong><br><span class="text-gray-400">البائع: ${t.seller}</span></td>
+                    <td class="py-2.5 px-3"><strong>${t.buyer}</strong><br><span class="text-blue-400">${t.buyerLocation}</span></td>
+                    <td class="py-2.5 px-3"><button onclick="viewOrderReceipt(${i})" class="bg-purple-600 text-white px-2.5 py-1 rounded cursor-pointer">معاينة الإيصال</button></td>
+                    <td class="py-2.5 px-3">${formatEGP(t.totalPrice)}</td>
+                    <td class="py-2.5 px-3 text-emerald-400 font-black">+${formatEGP(t.ownerProfit)}</td>
+                    <td class="py-2.5 px-3">
+                        ${t.payoutStatus === 'paid' ? '<span class="text-emerald-400 font-bold">تم التحويل</span>' : `<button onclick="markPaid(${i})" class="bg-amber-500 text-slate-950 px-2.5 py-1 rounded font-bold cursor-pointer">تحويل ${formatEGP(t.sellerNet)}</button>`}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function viewIdCardModal(sellerName, imgUrl) {
+            document.getElementById('receipt-viewer-title').textContent = `بطاقة الهوية الشخصية للبائع: ${sellerName}`;
+            document.getElementById('receipt-viewer-body').innerHTML = `
+                <div class="text-center pt-2">
+                    <img src="${imgUrl}" class="max-h-72 mx-auto rounded-xl border border-amber-500/50 shadow-lg" onerror="this.src='https://placehold.co/400x250/111827/10b981?text=ID+Card+Image'">
+                    <p class="text-gray-400 text-[11px] mt-2">تأكد من مطابقة الاسم ورقم الهوية قبل الموافقة على تفعيل الحساب.</p>
+                </div>
+            `;
+            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+        }
+
+        function viewOrderReceipt(idx) {
+            const t = transactions[idx];
+            document.getElementById('receipt-viewer-title').textContent = "معاينة إيصال التحويل وموقع المشتري";
+            document.getElementById('receipt-viewer-body').innerHTML = `
+                <div>المشتري: <strong>${t.buyer} (${t.buyerPhone})</strong></div>
+                <div>الموقع: <strong class="text-blue-400">${t.buyerLocation} - ${t.buyerAddress}</strong></div>
+                <div class="text-center pt-2"><span class="text-amber-300 block mb-1">إيصال التحويل على 01287252198:</span><img src="${t.receiptImage}" class="max-h-60 mx-auto rounded-xl border border-gray-700"></div>
+            `;
+            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+        }
+
+        function closeReceiptViewerModal() { document.getElementById('receipt-viewer-modal').classList.add('hidden'); }
+
+        function markPaid(idx) {
+            transactions[idx].payoutStatus = 'paid';
+            saveDataToStorage();
+            updateAdminDashboard();
+            showToast("تم تحويل المستحقات للبائع بنجاح!");
+        }
+
+        function openWithdrawModal() { document.getElementById('withdraw-modal').classList.remove('hidden'); }
+        function closeWithdrawModal() { document.getElementById('withdraw-modal').classList.add('hidden'); }
+        function processWithdraw() {
+            closeWithdrawModal();
+            showToast("تم سحب الأرباح بنجاح! 💰");
+        }
+
+        function switchTab(tab) {
+            if (tab === 'admin' && !isAdminUnlocked) { requestAdminAccess(); return; }
+            ['marketplace', 'seller', 'auth', 'admin'].forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                if (el) el.classList.add('hidden');
+            });
+            const targetTab = document.getElementById('tab-' + tab);
+            if (targetTab) targetTab.classList.remove('hidden');
+            updateSellerKycGateUI();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        let toastTimeout;
+        function showToast(title, msg = "") {
+            const box = document.getElementById('toast-box');
+            document.getElementById('toast-title').textContent = title;
+            document.getElementById('toast-msg').textContent = msg;
+            box.classList.remove('hidden');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => box.classList.add('hidden'), 5000);
+        }
+
+        window.onload = function() {
+            renderProducts();
+            updateSellerCalculator();
+            updateHeaderUserUI();
+            updateAdminDashboard();
+        };
+    </script>
+</body>
+</html>
+```eof
