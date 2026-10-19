@@ -16,14 +16,7 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Firebase SDKs (للحماية السحابية الحقيقية 100% والمزامنة الفورية) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // سيتم تهيئة الاتصال السحابي الآمن هنا تلقائياً
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
     <script>
         tailwind.config = {
@@ -235,7 +228,7 @@
                             </div>
                             <div>
                                 <label class="block font-bold text-gray-300 mb-1">الرقم السري *</label>
-                                <input type="password" id="reg-password" required minlength="4" placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                                <input type="password" id="reg-password" required minlength="6" placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
                             </div>
                         </div>
 
@@ -628,7 +621,7 @@
             <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg mx-auto"><i class="fa-solid fa-user-lock"></i></div>
             <h3 class="text-base font-black text-white">تسجيل دخول الإدارة 🔒</h3>
             <form onsubmit="verifyAdminCredentials(event)" class="space-y-2.5">
-                <input type="text" id="admin-user-input" required placeholder="اسم الإدارة" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-center text-white outline-none font-mono">
+                <input type="text" id="admin-user-input" required placeholder="إيميل الإدارة" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-center text-white outline-none font-mono">
                 <input type="password" id="admin-pin-input" required placeholder="الرقم السري" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-center text-white outline-none">
                 <p id="pin-error-msg" class="text-red-400 hidden font-bold">بيانات غير صحيحة!</p>
                 <div class="flex gap-2 pt-1">
@@ -682,8 +675,6 @@
         let isAdminUnlocked = false;
         let currentAdminRole = null;
 
-        const ADMIN_USER_CONFIG = "Awad.alaa1";
-        const ADMIN_PASS_CONFIG = "19980203";
         const INSTAPAY_NUMBER = "01287252198";
 
         let uploadedReceiptDataUrl = null;
@@ -691,52 +682,62 @@
         let uploadedIdCardDataUrl = null;
         let recoveredUserAccount = null;
 
-        // نظام تخزين محلي ومزامن موحد متطور
-        function getStorage(key, defaultVal) {
-            try {
-                const item = localStorage.getItem(key);
-                return item ? JSON.parse(item) : defaultVal;
-            } catch(e) {
-                return defaultVal;
+        // ====== إعدادات Supabase (حط بياناتك هنا) ======
+        const SUPABASE_URL = "https://kgjiictceiusqanonvnb.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_ihbKSjLdqNH2QGQOXn7WQw_tb9pNRmy";
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let users = [], currentUser = null, products = [], transactions = [];
+        let uploadedReceiptFile = null, uploadedIdCardFile = null;
+
+        const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const authEmail = phone => String(phone).replace(/\D/g, '') + '@waseet-users.com';
+
+        const mapUser = r => ({ id:r.id, rawName:r.name, name:esc(r.name), phone:esc(r.phone), email:esc(r.email), role:r.role, gender:esc(r.gender), services:esc(r.services), status:r.status, nationalId:esc(r.national_id), idCardPath:r.id_card_path, balance:0 });
+        const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), returnable:r.returnable, condition:r.condition, image:esc(r.image), desc:esc(r.description) });
+        const mapOrder = r => ({ txId:r.tx_id, itemTitle:esc(r.item_title), buyer:esc(r.buyer), buyerPhone:esc(r.buyer_phone), buyerLocation:r.buyer_location, buyerAddress:esc(r.buyer_address), receiptPath:r.receipt_path, seller:esc(r.seller_name), returnable:r.returnable, totalPrice:Number(r.total_price), rate:r.rate, ownerProfit:Number(r.owner_profit), sellerNet:Number(r.seller_net), payoutStatus:r.payout_status, returnStatus:r.return_status });
+
+        async function signedUrl(path) {
+            if (!path) return '';
+            const { data } = await sb.storage.from('docs').createSignedUrl(path, 300);
+            return data ? data.signedUrl : '';
+        }
+
+        async function checkAdmin() {
+            const { data } = await sb.from('admins').select('role').maybeSingle();
+            isAdminUnlocked = !!data;
+            currentAdminRole = data ? data.role : null;
+        }
+
+        async function loadAll() {
+            if (currentUser) {
+                const { data: pr } = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+                if (pr) currentUser = mapUser(pr);
             }
+            const p = await sb.from('products').select('*').order('created_at', { ascending: false });
+            products = (p.data || []).map(mapProduct);
+            transactions = []; users = [];
+            if (currentUser || isAdminUnlocked) {
+                const o = await sb.from('orders').select('*').order('created_at', { ascending: false });
+                transactions = (o.data || []).map(mapOrder);
+            }
+            if (isAdminUnlocked) {
+                const u = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+                users = (u.data || []).map(mapUser);
+            }
+            renderProducts(); updateHeaderUserUI(); updateAdminDashboard();
         }
 
-        function setStorage(key, val) {
-            try {
-                localStorage.setItem(key, JSON.stringify(val));
-            } catch(e) {}
+        async function initSession() {
+            currentUser = null; isAdminUnlocked = false; currentAdminRole = null;
+            const { data: { session } } = await sb.auth.getSession();
+            if (session) {
+                await checkAdmin();
+                const { data: pr } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+                if (pr) currentUser = mapUser(pr);
+            }
+            await loadAll();
         }
-
-        let users = getStorage('waseet_users', []);
-        let currentUser = getStorage('waseet_current_user', null);
-        let products = getStorage('waseet_products', [
-            { id: 1, title: "مجموعة روايات تاريخية أصلية", category: "كتب", seller: "أحمد وائل", price: 450, returnable: "نعم", condition: "جديد", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80", desc: "روايات أصلية." }
-        ]);
-        let transactions = getStorage('waseet_transactions', []);
-        let assistantAdminsConfig = getStorage('waseet_assistants', [
-            { id: 1, user: "admin1", pass: "123456", name: "أدمن 1", active: true }
-        ]);
-
-        function saveDataToStorage() {
-            setStorage('waseet_users', users);
-            setStorage('waseet_current_user', currentUser);
-            setStorage('waseet_products', products);
-            setStorage('waseet_transactions', transactions);
-            setStorage('waseet_assistants', assistantAdminsConfig);
-        }
-
-        window.addEventListener('storage', function(e) {
-            users = getStorage('waseet_users', []);
-            currentUser = getStorage('waseet_current_user', null);
-            products = getStorage('waseet_products', []);
-            transactions = getStorage('waseet_transactions', []);
-            
-            renderProducts();
-            updateHeaderUserUI();
-            updateAdminDashboard();
-            updateSellerDashboardUI();
-            updateBuyerDashboardUI();
-        });
 
         function getCommissionDetails(price) {
             const numericPrice = parseFloat(price) || 0;
@@ -757,8 +758,6 @@
             const menuSeller = document.getElementById('menu-btn-seller');
             const menuBuyer = document.getElementById('menu-btn-buyer');
 
-            users = getStorage('waseet_users', []);
-            currentUser = getStorage('waseet_current_user', null);
 
             if (!currentUser) {
                 nameEl.textContent = "تسجيل الدخول";
@@ -805,6 +804,7 @@
         function handleIdCardUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+            uploadedIdCardFile = file;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 uploadedIdCardDataUrl = evt.target.result;
@@ -821,110 +821,72 @@
             document.getElementById('id-card-upload-label').textContent = "اختر صورة البطاقة الشخصية";
         }
 
-        function handleUserLogin(e) {
-            e.preventDefault();
-            const phone = document.getElementById('login-phone').value.trim();
-            const pass = document.getElementById('login-password').value.trim();
+async function handleUserLogin(e) {
+    e.preventDefault();
+    const phone = document.getElementById('login-phone').value.trim();
+    const pass = document.getElementById('login-password').value.trim();
+    const { error } = await sb.auth.signInWithPassword({ email: authEmail(phone), password: pass });
+    if (error) { showToast("خطأ ⚠️", "رقم الهاتف أو الرقم السري غير صحيح."); return; }
+    await initSession();
+    if (!currentUser) { await sb.auth.signOut(); showToast("خطأ", "الحساب غير موجود أو تم حذفه."); return; }
+    switchTab(currentUser.role === 'seller' ? 'seller' : 'buyer-dashboard');
+    showToast("أهلاً بك!", currentUser.name);
+}
 
-            users = getStorage('waseet_users', []);
-            const found = users.find(u => u.phone === phone && u.password === pass);
-            if (!found) {
-                showToast("خطأ ⚠️", "رقم الهاتف أو الرقم السري غير صحيح.");
-                return;
-            }
-            currentUser = found;
-            saveDataToStorage();
-            updateHeaderUserUI();
-            switchTab(found.role === 'seller' ? 'seller' : 'buyer-dashboard');
-            showToast("أهلاً بك!", found.name);
-        }
+async function handleUserRegister(e) {
+    e.preventDefault();
+    const role = document.querySelector('input[name="reg-role"]:checked').value;
+    const gender = document.querySelector('input[name="reg-gender"]:checked').value;
+    const name = document.getElementById('reg-name').value.trim();
+    const phone = document.getElementById('reg-phone').value.trim();
+    const email = document.getElementById('reg-email').value.trim().toLowerCase();
+    const password = document.getElementById('reg-password').value.trim();
+    const selectedServices = [];
+    document.querySelectorAll('input[name="reg-service-opt"]:checked').forEach(cb => selectedServices.push(cb.value));
+    const customServiceText = document.getElementById('reg-custom-service').value.trim();
+    if (customServiceText) selectedServices.push(customServiceText);
 
-        function handleUserRegister(e) {
-            e.preventDefault();
-            const role = document.querySelector('input[name="reg-role"]:checked').value;
-            const gender = document.querySelector('input[name="reg-gender"]:checked').value;
-            const name = document.getElementById('reg-name').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
-            const email = document.getElementById('reg-email').value.trim().toLowerCase();
-            const password = document.getElementById('reg-password').value.trim();
+    let nationalId = null;
+    if (role === 'seller') {
+        nationalId = document.getElementById('reg-national-id').value.trim();
+        if (!uploadedIdCardFile) { showToast("مطلوب", "يرجى إرفاق صورة البطاقة الشخصية."); return; }
+    }
+    const { data, error } = await sb.auth.signUp({ email: authEmail(phone), password });
+    if (error) { showToast("تنبيه", /registered/i.test(error.message) ? "رقم الهاتف مسجل مسبقاً." : error.message); return; }
+    if (!data.session) { showToast("خطأ", "عطّل Confirm email في إعدادات Supabase."); return; }
+    const uid = data.user.id;
+    let idPath = null;
+    if (role === 'seller') {
+        idPath = uid + '/id_card';
+        const up = await sb.storage.from('docs').upload(idPath, uploadedIdCardFile);
+        if (up.error) { showToast("خطأ", "فشل رفع صورة البطاقة."); return; }
+    }
+    const ins = await sb.from('profiles').insert({
+        id: uid, name, phone, email, role, gender,
+        services: selectedServices.join(', ') || 'خدمات عامة',
+        status: role === 'seller' ? 'pending' : 'approved',
+        national_id: nationalId, id_card_path: idPath
+    });
+    if (ins.error) { showToast("خطأ", ins.error.message); return; }
+    await initSession();
+    switchTab(role === 'seller' ? 'seller' : 'buyer-dashboard');
+    showToast("تم التسجيل بنجاح 🎉");
+}
 
-            // جمع الخدمات المختارة
-            const selectedServices = [];
-            document.querySelectorAll('input[name="reg-service-opt"]:checked').forEach(cb => {
-                selectedServices.push(cb.value);
-            });
-            const customServiceText = document.getElementById('reg-custom-service').value.trim();
-            if (customServiceText) selectedServices.push(customServiceText);
+function verifyRecoveryEmail(e) {
+    e.preventDefault();
+    showToast("استعادة الرقم السري", "تواصل مع الإدارة لإعادة تعيين الرقم السري.");
+}
 
-            users = getStorage('waseet_users', []);
-            if (users.some(u => u.phone === phone)) {
-                showToast("تنبيه", "رقم الهاتف مسجل مسبقاً.");
-                return;
-            }
+function saveNewRecoveredPassword(e) { e.preventDefault(); }
 
-            let nationalId = "-";
-            let idCardImage = "";
-            if (role === 'seller') {
-                nationalId = document.getElementById('reg-national-id').value.trim();
-                if (!uploadedIdCardDataUrl) {
-                    showToast("مطلوب", "يرجى إرفاق صورة البطاقة الشخصية.");
-                    return;
-                }
-                idCardImage = uploadedIdCardDataUrl;
-            }
-
-            const newUser = {
-                id: Date.now(), name, phone, email, password, role, gender,
-                services: selectedServices.join(', ') || 'خدمات عامة',
-                status: role === 'seller' ? 'pending' : 'approved',
-                nationalId, idCardImage, balance: 0
-            };
-            
-            users.unshift(newUser);
-            currentUser = newUser;
-            saveDataToStorage();
-            updateHeaderUserUI();
-            updateAdminDashboard();
-            switchTab(role === 'seller' ? 'seller' : 'buyer-dashboard');
-            showToast("تم التسجيل بنجاح 🎉");
-        }
-
-        function verifyRecoveryEmail(e) {
-            e.preventDefault();
-            const email = document.getElementById('recovery-email-input').value.trim().toLowerCase();
-            users = getStorage('waseet_users', []);
-            const matched = users.find(u => u.email.toLowerCase() === email);
-            if (!matched) {
-                showToast("خطأ", "الإيميل غير مسجل.");
-                return;
-            }
-            recoveredUserAccount = matched;
-            document.getElementById('reset-password-box').classList.remove('hidden');
-            showToast("تم التحقق");
-        }
-
-        function saveNewRecoveredPassword(e) {
-            e.preventDefault();
-            const p1 = document.getElementById('new-reset-password').value;
-            users = getStorage('waseet_users', []);
-            const target = users.find(u => u.id === recoveredUserAccount.id);
-            if (target) {
-                target.password = p1;
-                saveDataToStorage();
-            }
-            currentUser = target;
-            updateHeaderUserUI();
-            switchAuthSubView('login');
-            showToast("تم تغيير الرقم السري 🔐");
-        }
-
-        function logoutUser() {
-            currentUser = null;
-            saveDataToStorage();
-            updateHeaderUserUI();
-            switchAuthSubView('login');
-            showToast("تم الخروج بنجاح");
-        }
+async function logoutUser() {
+    await sb.auth.signOut();
+    currentUser = null; isAdminUnlocked = false; currentAdminRole = null;
+    await loadAll();
+    switchAuthSubView('login');
+    showToast("تم الخروج بنجاح");
+}
 
         function updateSellerKycGateUI() {
             const gate = document.getElementById('seller-kyc-gate');
@@ -943,15 +905,13 @@
                 gate.innerHTML = `<h3 class="text-base font-black text-red-400">تم رفض الحساب ❌</h3>`;
             } else {
                 ws.classList.remove('opacity-40', 'pointer-events-none');
-                if (sellerInput) sellerInput.value = currentUser.name;
+                if (sellerInput) sellerInput.value = currentUser.rawName;
                 gate.innerHTML = `<h3 class="text-xs font-bold text-emerald-400">حساب بائع معتمد ومفعل: ${currentUser.name} ✅</h3>`;
             }
         }
 
         function updateSellerDashboardUI() {
             if (!currentUser || currentUser.role !== 'seller') return;
-            products = getStorage('waseet_products', []);
-            transactions = getStorage('waseet_transactions', []);
 
             const myProducts = products.filter(p => p.seller === currentUser.name);
             const mySoldTransactions = transactions.filter(t => t.seller === currentUser.name);
@@ -975,7 +935,6 @@
 
         function updateBuyerDashboardUI() {
             if (!currentUser || currentUser.role !== 'buyer') return;
-            transactions = getStorage('waseet_transactions', []);
             const myPurchases = transactions.filter(t => t.buyerPhone === currentUser.phone || t.buyer === currentUser.name);
 
             document.getElementById('buyer-orders-tbody').innerHTML = myPurchases.length === 0 ? `<tr><td colspan="6" class="text-center py-4 text-gray-500">لم تقم بشراء أي منتجات.</td></tr>` : myPurchases.map(t => `
@@ -992,17 +951,12 @@
             `).join('');
         }
 
-        function requestProductReturn(txId) {
-            transactions = getStorage('waseet_transactions', []);
-            const tx = transactions.find(t => t.txId === txId);
-            if (tx) {
-                tx.returnStatus = 'قيد مراجعة الإرجاع';
-                saveDataToStorage();
-                updateBuyerDashboardUI();
-                updateAdminDashboard();
-                showToast("تم طلب الإرجاع");
-            }
-        }
+async function requestProductReturn(txId) {
+    const { error } = await sb.rpc('request_return', { tx: txId });
+    if (error) { showToast("خطأ", error.message); return; }
+    await loadAll();
+    showToast("تم طلب الإرجاع");
+}
 
         function openSellerWithdrawModal() { document.getElementById('seller-withdraw-modal').classList.remove('hidden'); }
         function closeSellerWithdrawModal() { document.getElementById('seller-withdraw-modal').classList.add('hidden'); }
@@ -1012,7 +966,6 @@
         }
 
         function renderProducts() {
-            products = getStorage('waseet_products', []);
             const grid = document.getElementById('products-grid');
             const search = document.getElementById('search-input').value.toLowerCase();
             document.getElementById('count-all').textContent = products.length;
@@ -1056,36 +1009,32 @@
             document.getElementById('calc-seller-net').textContent = formatEGP(comm.sellerNet);
         }
 
-        function submitNewItem(e) {
-            e.preventDefault();
-            if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
-                showToast("غير مسموح", "يجب اعتماد الحساب.");
-                return;
-            }
-            const title = document.getElementById('item-title').value.trim();
-            const category = document.getElementById('item-category').value;
-            const seller = currentUser.name;
-            const returnable = document.getElementById('item-returnable').value;
-            const price = parseFloat(document.getElementById('item-price').value) || 1000;
-            const image = document.getElementById('item-image').value.trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80';
-            const desc = document.getElementById('item-desc').value.trim();
-
-            products = getStorage('waseet_products', []);
-            products.unshift({ id: Date.now(), title, category, seller, price, returnable, condition: 'جديد', image, desc });
-            saveDataToStorage();
-            renderProducts();
-            updateSellerDashboardUI();
-            switchTab('seller');
-            showToast("تم نشر القطعة بنجاح");
-        }
+async function submitNewItem(e) {
+    e.preventDefault();
+    if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
+        showToast("غير مسموح", "يجب اعتماد الحساب."); return;
+    }
+    const price = parseFloat(document.getElementById('item-price').value) || 1000;
+    const { error } = await sb.from('products').insert({
+        title: document.getElementById('item-title').value.trim(),
+        category: document.getElementById('item-category').value,
+        seller_id: currentUser.id, seller_name: currentUser.rawName, price,
+        returnable: document.getElementById('item-returnable').value, condition: 'جديد',
+        image: document.getElementById('item-image').value.trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+        description: document.getElementById('item-desc').value.trim()
+    });
+    if (error) { showToast("خطأ", error.message); return; }
+    await loadAll();
+    switchTab('seller');
+    showToast("تم نشر القطعة بنجاح");
+}
 
         function openCheckoutModal(id) {
-            products = getStorage('waseet_products', []);
             const item = products.find(p => p.id === id);
             if (!item) return;
             selectedCheckoutItemId = id;
             if (currentUser) {
-                document.getElementById('buyer-name').value = currentUser.name;
+                document.getElementById('buyer-name').value = currentUser.rawName;
                 document.getElementById('buyer-phone').value = currentUser.phone;
             }
             document.getElementById('checkout-item-summary').innerHTML = `
@@ -1128,7 +1077,7 @@
         function handleReceiptUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
-            uploadedReceiptName = file.name;
+            uploadedReceiptName = file.name; uploadedReceiptFile = file;
             const reader = new FileReader();
             reader.onload = function(evt) {
                 uploadedReceiptDataUrl = evt.target.result;
@@ -1136,34 +1085,33 @@
             reader.readAsDataURL(file);
         }
 
-        function confirmPurchase(e) {
-            e.preventDefault();
-            products = getStorage('waseet_products', []);
-            const item = products.find(p => p.id === selectedCheckoutItemId);
-            if (!item) return;
-            const buyerName = document.getElementById('buyer-name').value;
-            const buyerPhone = document.getElementById('buyer-phone').value;
-            const buyerLocation = document.getElementById('buyer-gps-coords').value;
-            const buyerAddress = document.getElementById('buyer-address').value;
-
-            if (!buyerLocation) { showToast("مطلوب", "حدد الموقع."); return; }
-            if (!uploadedReceiptDataUrl) { showToast("مطلوب", "أرفق الإيصال."); return; }
-
-            const comm = getCommissionDetails(item.price);
-            transactions = getStorage('waseet_transactions', []);
-            transactions.unshift({
-                txId: "#ORD-" + Math.floor(704 + Math.random() * 290),
-                itemTitle: item.title, buyer: buyerName, buyerPhone, buyerLocation, buyerAddress,
-                receiptImage: uploadedReceiptDataUrl, seller: item.seller, returnable: item.returnable || 'لا',
-                totalPrice: item.price, rate: comm.rate, ownerProfit: comm.fee, sellerNet: comm.sellerNet, payoutStatus: "pending", returnStatus: "سليم"
-            });
-            saveDataToStorage();
-            closeCheckoutModal();
-            updateAdminDashboard();
-            updateBuyerDashboardUI();
-            updateSellerDashboardUI();
-            showToast("تم تأكيد الطلب بنجاح! 🎉");
-        }
+async function confirmPurchase(e) {
+    e.preventDefault();
+    const item = products.find(p => p.id === selectedCheckoutItemId);
+    if (!item) return;
+    if (!currentUser) { closeCheckoutModal(); switchTab('auth'); showToast("مطلوب", "سجّل دخولك أولاً."); return; }
+    const buyerLocation = document.getElementById('buyer-gps-coords').value;
+    if (!buyerLocation) { showToast("مطلوب", "حدد الموقع."); return; }
+    if (!uploadedReceiptFile) { showToast("مطلوب", "أرفق الإيصال."); return; }
+    const comm = getCommissionDetails(item.price);
+    const txId = "#ORD-" + Date.now().toString().slice(-7);
+    const path = currentUser.id + '/receipt_' + Date.now();
+    const up = await sb.storage.from('docs').upload(path, uploadedReceiptFile);
+    if (up.error) { showToast("خطأ", "فشل رفع الإيصال."); return; }
+    const { error } = await sb.from('orders').insert({
+        tx_id: txId, item_id: item.id, item_title: item.titleRaw,
+        buyer_id: currentUser.id, buyer: document.getElementById('buyer-name').value,
+        buyer_phone: document.getElementById('buyer-phone').value,
+        buyer_location: buyerLocation, buyer_address: document.getElementById('buyer-address').value,
+        receipt_path: path, seller_id: item.sellerId, seller_name: item.sellerRaw,
+        returnable: item.returnable || 'لا', total_price: item.price,
+        rate: comm.rate, owner_profit: comm.fee, seller_net: comm.sellerNet
+    });
+    if (error) { showToast("خطأ", error.message); return; }
+    closeCheckoutModal();
+    await loadAll();
+    showToast("تم تأكيد الطلب بنجاح! 🎉");
+}
 
         function requestAdminAccess() {
             if (isAdminUnlocked) {
@@ -1178,99 +1126,66 @@
 
         function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
 
-        function verifyAdminCredentials(e) {
-            e.preventDefault();
-            const uInput = document.getElementById('admin-user-input').value.trim();
-            const pInput = document.getElementById('admin-pin-input').value.trim();
-
-            if (uInput === ADMIN_USER_CONFIG && pInput === ADMIN_PASS_CONFIG) {
-                isAdminUnlocked = true;
-                currentAdminRole = 'owner';
-                closePinModal();
-                switchTab('admin');
-                updateHeaderUserUI();
-                showToast("أهلاً بك يا مالك المنصة 🔓");
-                return;
-            }
-
-            assistantAdminsConfig = getStorage('waseet_assistants', []);
-            const foundAdmin = assistantAdminsConfig.find(a => a.user === uInput && a.pass === pInput);
-            if (foundAdmin) {
-                if (!foundAdmin.active) {
-                    document.getElementById('pin-error-msg').classList.remove('hidden');
-                    return;
-                }
-                isAdminUnlocked = true;
-                currentAdminRole = 'admin';
-                closePinModal();
-                switchTab('admin');
-                updateHeaderUserUI();
-                showToast("أهلاً بك يا أدمن 🔓");
-                return;
-            }
-
-            document.getElementById('pin-error-msg').classList.remove('hidden');
+async function verifyAdminCredentials(e) {
+    e.preventDefault();
+    const email = document.getElementById('admin-user-input').value.trim();
+    const pass = document.getElementById('admin-pin-input').value.trim();
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (!error) {
+        await checkAdmin();
+        if (isAdminUnlocked) {
+            closePinModal();
+            await initSession();
+            switchTab('admin');
+            showToast("أهلاً بك في لوحة الإدارة 🔓");
+            return;
         }
+        await sb.auth.signOut();
+    }
+    document.getElementById('pin-error-msg').classList.remove('hidden');
+}
 
-        function lockAdminPanel() { 
-            isAdminUnlocked = false; 
-            currentAdminRole = null;
-            switchTab('marketplace'); 
-            updateHeaderUserUI();
-            showToast("تم قفل لوحة الإدارة 🔒"); 
-        }
+async function lockAdminPanel() {
+    await sb.auth.signOut();
+    isAdminUnlocked = false; currentAdminRole = null; currentUser = null;
+    switchTab('marketplace');
+    await loadAll();
+    showToast("تم قفل لوحة الإدارة 🔒");
+}
 
-        function updateUserStatus(userId, status) {
-            users = getStorage('waseet_users', []);
-            const u = users.find(user => user.id === userId);
-            if (u) {
-                u.status = status;
-                saveDataToStorage();
-                updateAdminDashboard();
-                updateHeaderUserUI();
-                showToast(status === 'approved' ? "تم الاعتماد" : "تم الرفض");
-            }
-        }
+async function updateUserStatus(userId, status) {
+    const { error } = await sb.from('profiles').update({ status }).eq('id', userId);
+    if (error) { showToast("خطأ", error.message); return; }
+    await loadAll();
+    showToast(status === 'approved' ? "تم الاعتماد" : "تم الرفض");
+}
 
-        function deleteUser(userId) {
-            if (confirm("حذف المستخدم؟")) {
-                users = getStorage('waseet_users', []);
-                users = users.filter(u => u.id !== userId);
-                if (currentUser && currentUser.id === userId) currentUser = null;
-                saveDataToStorage();
-                updateAdminDashboard();
-                updateHeaderUserUI();
-                showToast("تم الحذف");
-            }
-        }
+async function deleteUser(userId) {
+    if (!confirm("حذف المستخدم؟")) return;
+    const { error } = await sb.from('profiles').delete().eq('id', userId);
+    if (error) { showToast("خطأ", error.message); return; }
+    await loadAll();
+    showToast("تم الحذف");
+}
 
-        function deleteProduct(productId) {
-            if (confirm("حذف القطعة؟")) {
-                products = getStorage('waseet_products', []);
-                products = products.filter(p => p.id !== productId);
-                saveDataToStorage();
-                renderProducts();
-                updateAdminDashboard();
-                updateSellerDashboardUI();
-                showToast("تم الحذف");
-            }
-        }
+async function deleteProduct(productId) {
+    if (!confirm("حذف القطعة؟")) return;
+    const { error } = await sb.from('products').delete().eq('id', productId);
+    if (error) { showToast("خطأ", error.message); return; }
+    await loadAll();
+    showToast("تم الحذف");
+}
 
-        function markPaid(idx) {
-            transactions = getStorage('waseet_transactions', []);
-            const t = transactions[idx];
-            if (!t) return;
-            t.payoutStatus = 'paid';
-            saveDataToStorage();
-            updateAdminDashboard();
-            updateSellerDashboardUI();
-            showToast("تم تحويل الرصيد للبائع بنجاح ⚡");
-        }
+async function markPaid(idx) {
+    const t = transactions[idx];
+    if (!t) return;
+    const { error } = await sb.from('orders').update({ payout_status: 'paid' }).eq('tx_id', t.txId);
+    if (error) { showToast("خطأ", error.message); return; }
+    await loadAll();
+    showToast("تم تحويل الرصيد للبائع بنجاح ⚡");
+}
 
         function updateAdminDashboard() {
-            users = getStorage('waseet_users', []);
-            products = getStorage('waseet_products', []);
-            transactions = getStorage('waseet_transactions', []);
 
             let totalSales = 0, totalProfit = 0, totalDues = 0;
             transactions.forEach(t => { totalSales += t.totalPrice; totalProfit += t.ownerProfit; totalDues += t.sellerNet; });
@@ -1283,14 +1198,14 @@
 
             document.getElementById('admin-users-tbody').innerHTML = users.length === 0 ? `<tr><td colspan="6" class="text-center py-3 text-gray-500">لا يوجد مستخدمون.</td></tr>` : users.map(u => `
                 <tr>
-                    <td class="py-2.5 px-3 font-bold text-white">${u.name}<br><span class="text-gray-400 text-[10px]">${u.gender || ''}</span></td>
+                    <td class="py-2.5 px-3 font-bold text-white">${u.name}<br><span class="text-gray-400 text-[10px]">${u.gender || ''}</span>${u.idCardPath ? `<br><span class="text-gray-400 text-[10px]">رقم قومي: ${u.nationalId}</span> <button onclick="viewIdCard('${u.id}')" class="bg-purple-600 text-white px-2 py-0.5 rounded text-[10px]">البطاقة</button>` : ''}</td>
                     <td class="py-2.5 px-3">${u.role === 'buyer' ? '🛒 مشتري' : '📦 بائع'}</td>
                     <td class="py-2.5 px-3">${u.phone}<br><span class="text-gray-400 text-[9px]">${u.email}</span></td>
                     <td class="py-2.5 px-3 font-normal text-emerald-300 max-w-[150px] truncate" title="${u.services || 'غير مذكور'}">${u.services || 'عام'}</td>
                     <td class="py-2.5 px-3">${u.role === 'seller' ? (u.status === 'approved' ? '✅ معتمد' : (u.status === 'rejected' ? '❌ مرفوض' : '⏳ قيد الفحص')) : 'نشط'}</td>
                     <td class="py-2.5 px-3 flex gap-1">
-                        ${u.role === 'seller' && u.status !== 'approved' ? `<button onclick="updateUserStatus(${u.id}, 'approved')" class="bg-emerald-500 text-slate-950 px-2 py-0.5 rounded font-black">تفعيل</button>` : ''}
-                        <button onclick="deleteUser(${u.id})" class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded">حذف</button>
+                        ${u.role === 'seller' && u.status !== 'approved' ? `<button onclick="updateUserStatus('${u.id}', 'approved')" class="bg-emerald-500 text-slate-950 px-2 py-0.5 rounded font-black">تفعيل</button>` : ''}
+                        <button onclick="deleteUser('${u.id}')" class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded">حذف</button>
                     </td>
                 </tr>
             `).join('');
@@ -1320,13 +1235,22 @@
             `).join('');
         }
 
-        function viewOrderReceipt(idx) {
-            transactions = getStorage('waseet_transactions', []);
-            const t = transactions[idx];
-            document.getElementById('receipt-viewer-title').textContent = "إيصال التحويل";
-            document.getElementById('receipt-viewer-body').innerHTML = `<p>المشتري: ${t.buyer} (${t.buyerPhone})</p><img src="${t.receiptImage}" class="max-h-60 mx-auto rounded-xl">`;
-            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
-        }
+async function viewOrderReceipt(idx) {
+    const t = transactions[idx];
+    if (!t) return;
+    const url = await signedUrl(t.receiptPath);
+    document.getElementById('receipt-viewer-title').textContent = "إيصال التحويل";
+    document.getElementById('receipt-viewer-body').innerHTML = `<p>المشتري: ${t.buyer} (${t.buyerPhone})</p><img src="${url}" class="max-h-60 mx-auto rounded-xl">`;
+    document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+}
+async function viewIdCard(id) {
+    const u = users.find(x => x.id === id);
+    if (!u) return;
+    const url = await signedUrl(u.idCardPath);
+    document.getElementById('receipt-viewer-title').textContent = "البطاقة الشخصية";
+    document.getElementById('receipt-viewer-body').innerHTML = `<p>${u.name} — ${u.phone}<br>الرقم القومي: ${u.nationalId}</p><img src="${url}" class="max-h-60 mx-auto rounded-xl">`;
+    document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+}
 
         function closeReceiptViewerModal() { document.getElementById('receipt-viewer-modal').classList.add('hidden'); }
 
@@ -1359,11 +1283,10 @@
             toastTimeout = setTimeout(() => box.classList.add('hidden'), 4000);
         }
 
-        window.onload = function() {
-            renderProducts();
+        window.onload = async function() {
             updateSellerCalculator();
-            updateHeaderUserUI();
-            updateAdminDashboard();
+            await initSession();
+            setInterval(() => { if (!document.hidden) loadAll(); }, 20000);
         };
     </script>
 </body>
