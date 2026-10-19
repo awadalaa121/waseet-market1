@@ -16,6 +16,7 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Supabase JS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
     <script>
@@ -621,9 +622,9 @@
             <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg mx-auto"><i class="fa-solid fa-user-lock"></i></div>
             <h3 class="text-base font-black text-white">تسجيل دخول الإدارة 🔒</h3>
             <form onsubmit="verifyAdminCredentials(event)" class="space-y-2.5">
-                <input type="text" id="admin-user-input" required placeholder="إيميل الإدارة" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-center text-white outline-none font-mono">
+                <input type="text" id="admin-user-input" required placeholder="إيميل المالك (مثال: owner@waseet.com)" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-center text-white outline-none font-mono">
                 <input type="password" id="admin-pin-input" required placeholder="الرقم السري" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-center text-white outline-none">
-                <p id="pin-error-msg" class="text-red-400 hidden font-bold">بيانات غير صحيحة!</p>
+                <p id="pin-error-msg" class="text-red-400 hidden font-bold">بيانات الدخول غير صحيحة أو لست مشرفاً!</p>
                 <div class="flex gap-2 pt-1">
                     <button type="button" onclick="closePinModal()" class="w-1/2 py-2 bg-gray-800 text-gray-300 rounded-xl cursor-pointer">إلغاء</button>
                     <button type="submit" class="w-1/2 py-2 bg-amber-500 text-slate-950 font-black rounded-xl cursor-pointer">دخول</button>
@@ -682,7 +683,6 @@
         let uploadedIdCardDataUrl = null;
         let recoveredUserAccount = null;
 
-        // ====== إعدادات Supabase (حط بياناتك هنا) ======
         const SUPABASE_URL = "https://kgjiictceiusqanonvnb.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_ihbKSjLdqNH2QGQOXn7WQw_tb9pNRmy";
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -704,7 +704,9 @@
         }
 
         async function checkAdmin() {
-            const { data } = await sb.from('admins').select('role').maybeSingle();
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) { isAdminUnlocked = false; currentAdminRole = null; return; }
+            const { data } = await sb.from('admins').select('role').eq('id', session.user.id).maybeSingle();
             isAdminUnlocked = !!data;
             currentAdminRole = data ? data.role : null;
         }
@@ -757,7 +759,6 @@
             const banner = document.getElementById('logged-in-profile-banner');
             const menuSeller = document.getElementById('menu-btn-seller');
             const menuBuyer = document.getElementById('menu-btn-buyer');
-
 
             if (!currentUser) {
                 nameEl.textContent = "تسجيل الدخول";
@@ -827,72 +828,72 @@
             document.getElementById('id-card-upload-label').textContent = "اختر صورة البطاقة الشخصية";
         }
 
-async function handleUserLogin(e) {
-    e.preventDefault();
-    const phone = document.getElementById('login-phone').value.trim();
-    const pass = document.getElementById('login-password').value.trim();
-    const { error } = await sb.auth.signInWithPassword({ email: authEmail(phone), password: pass });
-    if (error) { showToast("خطأ ⚠️", "رقم الهاتف أو الرقم السري غير صحيح."); return; }
-    await initSession();
-    if (!currentUser) { await sb.auth.signOut(); showToast("خطأ", "الحساب غير موجود أو تم حذفه."); return; }
-    switchTab(currentUser.role === 'seller' ? 'seller' : 'buyer-dashboard');
-    showToast("أهلاً بك!", currentUser.name);
-}
+        async function handleUserLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('login-phone').value.trim();
+            const pass = document.getElementById('login-password').value.trim();
+            const { error } = await sb.auth.signInWithPassword({ email: authEmail(phone), password: pass });
+            if (error) { showToast("خطأ ⚠️", "رقم الهاتف أو الرقم السري غير صحيح."); return; }
+            await initSession();
+            if (!currentUser) { await sb.auth.signOut(); showToast("خطأ", "الحساب غير موجود."); return; }
+            switchTab(currentUser.role === 'seller' ? 'seller' : 'buyer-dashboard');
+            showToast("أهلاً بك!", currentUser.name);
+        }
 
-async function handleUserRegister(e) {
-    e.preventDefault();
-    const role = document.querySelector('input[name="reg-role"]:checked').value;
-    const gender = document.querySelector('input[name="reg-gender"]:checked').value;
-    const name = document.getElementById('reg-name').value.trim();
-    const phone = document.getElementById('reg-phone').value.trim();
-    const email = document.getElementById('reg-email').value.trim().toLowerCase();
-    const password = document.getElementById('reg-password').value.trim();
-    const selectedServices = [];
-    document.querySelectorAll('input[name="reg-service-opt"]:checked').forEach(cb => selectedServices.push(cb.value));
-    const customServiceText = document.getElementById('reg-custom-service').value.trim();
-    if (customServiceText) selectedServices.push(customServiceText);
+        async function handleUserRegister(e) {
+            e.preventDefault();
+            const role = document.querySelector('input[name="reg-role"]:checked').value;
+            const gender = document.querySelector('input[name="reg-gender"]:checked').value;
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const password = document.getElementById('reg-password').value.trim();
+            const selectedServices = [];
+            document.querySelectorAll('input[name="reg-service-opt"]:checked').forEach(cb => selectedServices.push(cb.value));
+            const customServiceText = document.getElementById('reg-custom-service').value.trim();
+            if (customServiceText) selectedServices.push(customServiceText);
 
-    let nationalId = null;
-    if (role === 'seller') {
-        nationalId = document.getElementById('reg-national-id').value.trim();
-        if (!uploadedIdCardFile) { showToast("مطلوب", "يرجى إرفاق صورة البطاقة الشخصية."); return; }
-    }
-    const { data, error } = await sb.auth.signUp({ email: authEmail(phone), password });
-    if (error) { showToast("تنبيه", /registered/i.test(error.message) ? "رقم الهاتف مسجل مسبقاً." : error.message); return; }
-    if (!data.session) { showToast("خطأ", "عطّل Confirm email في إعدادات Supabase."); return; }
-    const uid = data.user.id;
-    let idPath = null;
-    if (role === 'seller') {
-        idPath = uid + '/id_card';
-        const up = await sb.storage.from('docs').upload(idPath, uploadedIdCardFile);
-        if (up.error) { showToast("خطأ", "فشل رفع صورة البطاقة."); return; }
-    }
-    const ins = await sb.from('profiles').insert({
-        id: uid, name, phone, email, role, gender,
-        services: selectedServices.join(', ') || 'خدمات عامة',
-        status: role === 'seller' ? 'pending' : 'approved',
-        national_id: nationalId, id_card_path: idPath
-    });
-    if (ins.error) { showToast("خطأ", ins.error.message); return; }
-    await initSession();
-    switchTab(role === 'seller' ? 'seller' : 'buyer-dashboard');
-    showToast("تم التسجيل بنجاح 🎉");
-}
+            let nationalId = null;
+            if (role === 'seller') {
+                nationalId = document.getElementById('reg-national-id').value.trim();
+                if (!uploadedIdCardFile) { showToast("مطلوب", "يرجى إرفاق صورة البطاقة الشخصية."); return; }
+            }
+            const { data, error } = await sb.auth.signUp({ email: authEmail(phone), password });
+            if (error) { showToast("تنبيه", /registered/i.test(error.message) ? "رقم الهاتف مسجل مسبقاً." : error.message); return; }
+            if (!data.session) { showToast("خطأ", "عطّل Confirm email في إعدادات Supabase."); return; }
+            const uid = data.user.id;
+            let idPath = null;
+            if (role === 'seller') {
+                idPath = uid + '/id_card';
+                const up = await sb.storage.from('docs').upload(idPath, uploadedIdCardFile);
+                if (up.error) { showToast("خطأ", "فشل رفع صورة البطاقة."); return; }
+            }
+            const ins = await sb.from('profiles').insert({
+                id: uid, name, phone, email, role, gender,
+                services: selectedServices.join(', ') || 'خدمات عامة',
+                status: role === 'seller' ? 'pending' : 'approved',
+                national_id: nationalId, id_card_path: idPath
+            });
+            if (ins.error) { showToast("خطأ", ins.error.message); return; }
+            await initSession();
+            switchTab(role === 'seller' ? 'seller' : 'buyer-dashboard');
+            showToast("تم التسجيل بنجاح 🎉");
+        }
 
-function verifyRecoveryEmail(e) {
-    e.preventDefault();
-    showToast("استعادة الرقم السري", "تواصل مع الإدارة لإعادة تعيين الرقم السري.");
-}
+        function verifyRecoveryEmail(e) {
+            e.preventDefault();
+            showToast("استعادة الرقم السري", "تواصل مع الإدارة لإعادة تعيين الرقم السري.");
+        }
 
-function saveNewRecoveredPassword(e) { e.preventDefault(); }
+        function saveNewRecoveredPassword(e) { e.preventDefault(); }
 
-async function logoutUser() {
-    await sb.auth.signOut();
-    currentUser = null; isAdminUnlocked = false; currentAdminRole = null;
-    await loadAll();
-    switchAuthSubView('login');
-    showToast("تم الخروج بنجاح");
-}
+        async function logoutUser() {
+            await sb.auth.signOut();
+            currentUser = null; isAdminUnlocked = false; currentAdminRole = null;
+            await loadAll();
+            switchAuthSubView('login');
+            showToast("تم الخروج بنجاح");
+        }
 
         function updateSellerKycGateUI() {
             const gate = document.getElementById('seller-kyc-gate');
@@ -918,7 +919,6 @@ async function logoutUser() {
 
         function updateSellerDashboardUI() {
             if (!currentUser || currentUser.role !== 'seller') return;
-
             const myProducts = products.filter(p => p.seller === currentUser.name);
             const mySoldTransactions = transactions.filter(t => t.seller === currentUser.name);
             let totalNet = 0;
@@ -957,12 +957,12 @@ async function logoutUser() {
             `).join('');
         }
 
-async function requestProductReturn(txId) {
-    const { error } = await sb.rpc('request_return', { tx: txId });
-    if (error) { showToast("خطأ", error.message); return; }
-    await loadAll();
-    showToast("تم طلب الإرجاع");
-}
+        async function requestProductReturn(txId) {
+            const { error } = await sb.rpc('request_return', { tx: txId });
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast("تم طلب الإرجاع");
+        }
 
         function openSellerWithdrawModal() { document.getElementById('seller-withdraw-modal').classList.remove('hidden'); }
         function closeSellerWithdrawModal() { document.getElementById('seller-withdraw-modal').classList.add('hidden'); }
@@ -1015,25 +1015,25 @@ async function requestProductReturn(txId) {
             document.getElementById('calc-seller-net').textContent = formatEGP(comm.sellerNet);
         }
 
-async function submitNewItem(e) {
-    e.preventDefault();
-    if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
-        showToast("غير مسموح", "يجب اعتماد الحساب."); return;
-    }
-    const price = parseFloat(document.getElementById('item-price').value) || 1000;
-    const { error } = await sb.from('products').insert({
-        title: document.getElementById('item-title').value.trim(),
-        category: document.getElementById('item-category').value,
-        seller_id: currentUser.id, seller_name: currentUser.rawName, price,
-        returnable: document.getElementById('item-returnable').value, condition: 'جديد',
-        image: document.getElementById('item-image').value.trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-        description: document.getElementById('item-desc').value.trim()
-    });
-    if (error) { showToast("خطأ", error.message); return; }
-    await loadAll();
-    switchTab('seller');
-    showToast("تم نشر القطعة بنجاح");
-}
+        async function submitNewItem(e) {
+            e.preventDefault();
+            if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
+                showToast("غير مسموح", "يجب اعتماد الحساب."); return;
+            }
+            const price = parseFloat(document.getElementById('item-price').value) || 1000;
+            const { error } = await sb.from('products').insert({
+                title: document.getElementById('item-title').value.trim(),
+                category: document.getElementById('item-category').value,
+                seller_id: currentUser.id, seller_name: currentUser.rawName, price,
+                returnable: document.getElementById('item-returnable').value, condition: 'جديد',
+                image: document.getElementById('item-image').value.trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+                description: document.getElementById('item-desc').value.trim()
+            });
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            switchTab('seller');
+            showToast("تم نشر القطعة بنجاح");
+        }
 
         function openCheckoutModal(id) {
             const item = products.find(p => p.id === id);
@@ -1091,33 +1091,33 @@ async function submitNewItem(e) {
             reader.readAsDataURL(file);
         }
 
-async function confirmPurchase(e) {
-    e.preventDefault();
-    const item = products.find(p => p.id === selectedCheckoutItemId);
-    if (!item) return;
-    if (!currentUser) { closeCheckoutModal(); switchTab('auth'); showToast("مطلوب", "سجّل دخولك أولاً."); return; }
-    const buyerLocation = document.getElementById('buyer-gps-coords').value;
-    if (!buyerLocation) { showToast("مطلوب", "حدد الموقع."); return; }
-    if (!uploadedReceiptFile) { showToast("مطلوب", "أرفق الإيصال."); return; }
-    const comm = getCommissionDetails(item.price);
-    const txId = "#ORD-" + Date.now().toString().slice(-7);
-    const path = currentUser.id + '/receipt_' + Date.now();
-    const up = await sb.storage.from('docs').upload(path, uploadedReceiptFile);
-    if (up.error) { showToast("خطأ", "فشل رفع الإيصال."); return; }
-    const { error } = await sb.from('orders').insert({
-        tx_id: txId, item_id: item.id, item_title: item.titleRaw,
-        buyer_id: currentUser.id, buyer: document.getElementById('buyer-name').value,
-        buyer_phone: document.getElementById('buyer-phone').value,
-        buyer_location: buyerLocation, buyer_address: document.getElementById('buyer-address').value,
-        receipt_path: path, seller_id: item.sellerId, seller_name: item.sellerRaw,
-        returnable: item.returnable || 'لا', total_price: item.price,
-        rate: comm.rate, owner_profit: comm.fee, seller_net: comm.sellerNet
-    });
-    if (error) { showToast("خطأ", error.message); return; }
-    closeCheckoutModal();
-    await loadAll();
-    showToast("تم تأكيد الطلب بنجاح! 🎉");
-}
+        async function confirmPurchase(e) {
+            e.preventDefault();
+            const item = products.find(p => p.id === selectedCheckoutItemId);
+            if (!item) return;
+            if (!currentUser) { closeCheckoutModal(); switchTab('auth'); showToast("مطلوب", "سجّل دخولك أولاً."); return; }
+            const buyerLocation = document.getElementById('buyer-gps-coords').value;
+            if (!buyerLocation) { showToast("مطلوب", "حدد الموقع."); return; }
+            if (!uploadedReceiptFile) { showToast("مطلوب", "أرفق الإيصال."); return; }
+            const comm = getCommissionDetails(item.price);
+            const txId = "#ORD-" + Date.now().toString().slice(-7);
+            const path = currentUser.id + '/receipt_' + Date.now();
+            const up = await sb.storage.from('docs').upload(path, uploadedReceiptFile);
+            if (up.error) { showToast("خطأ", "فشل رفع الإيصال."); return; }
+            const { error } = await sb.from('orders').insert({
+                tx_id: txId, item_id: item.id, item_title: item.titleRaw,
+                buyer_id: currentUser.id, buyer: document.getElementById('buyer-name').value,
+                buyer_phone: document.getElementById('buyer-phone').value,
+                buyer_location: buyerLocation, buyer_address: document.getElementById('buyer-address').value,
+                receipt_path: path, seller_id: item.sellerId, seller_name: item.sellerRaw,
+                returnable: item.returnable || 'لا', total_price: item.price,
+                rate: comm.rate, owner_profit: comm.fee, seller_net: comm.sellerNet
+            });
+            if (error) { showToast("خطأ", error.message); return; }
+            closeCheckoutModal();
+            await loadAll();
+            showToast("تم تأكيد الطلب بنجاح! 🎉");
+        }
 
         function requestAdminAccess() {
             if (isAdminUnlocked) {
@@ -1132,67 +1132,66 @@ async function confirmPurchase(e) {
 
         function closePinModal() { document.getElementById('pin-modal').classList.add('hidden'); }
 
-async function verifyAdminCredentials(e) {
-    e.preventDefault();
-    const email = document.getElementById('admin-user-input').value.trim();
-    const pass = document.getElementById('admin-pin-input').value.trim();
-    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (!error) {
-        await checkAdmin();
-        if (isAdminUnlocked) {
-            closePinModal();
-            await initSession();
-            switchTab('admin');
-            showToast("أهلاً بك في لوحة الإدارة 🔓");
-            return;
+        async function verifyAdminCredentials(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-user-input').value.trim();
+            const pass = document.getElementById('admin-pin-input').value.trim();
+            const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+            if (!error) {
+                await checkAdmin();
+                if (isAdminUnlocked) {
+                    closePinModal();
+                    await initSession();
+                    switchTab('admin');
+                    showToast("أهلاً بك في لوحة الإدارة 🔓");
+                    return;
+                }
+                await sb.auth.signOut();
+            }
+            document.getElementById('pin-error-msg').classList.remove('hidden');
         }
-        await sb.auth.signOut();
-    }
-    document.getElementById('pin-error-msg').classList.remove('hidden');
-}
 
-async function lockAdminPanel() {
-    await sb.auth.signOut();
-    isAdminUnlocked = false; currentAdminRole = null; currentUser = null;
-    switchTab('marketplace');
-    await loadAll();
-    showToast("تم قفل لوحة الإدارة 🔒");
-}
+        async function lockAdminPanel() {
+            await sb.auth.signOut();
+            isAdminUnlocked = false; currentAdminRole = null; currentUser = null;
+            switchTab('marketplace');
+            await loadAll();
+            showToast("تم قفل لوحة الإدارة 🔒");
+        }
 
-async function updateUserStatus(userId, status) {
-    const { error } = await sb.from('profiles').update({ status }).eq('id', userId);
-    if (error) { showToast("خطأ", error.message); return; }
-    await loadAll();
-    showToast(status === 'approved' ? "تم الاعتماد" : "تم الرفض");
-}
+        async function updateUserStatus(userId, status) {
+            const { error } = await sb.from('profiles').update({ status }).eq('id', userId);
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast(status === 'approved' ? "تم الاعتماد" : "تم الرفض");
+        }
 
-async function deleteUser(userId) {
-    if (!confirm("حذف المستخدم؟")) return;
-    const { error } = await sb.from('profiles').delete().eq('id', userId);
-    if (error) { showToast("خطأ", error.message); return; }
-    await loadAll();
-    showToast("تم الحذف");
-}
+        async function deleteUser(userId) {
+            if (!confirm("حذف المستخدم؟")) return;
+            const { error } = await sb.from('profiles').delete().eq('id', userId);
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast("تم الحذف");
+        }
 
-async function deleteProduct(productId) {
-    if (!confirm("حذف القطعة؟")) return;
-    const { error } = await sb.from('products').delete().eq('id', productId);
-    if (error) { showToast("خطأ", error.message); return; }
-    await loadAll();
-    showToast("تم الحذف");
-}
+        async function deleteProduct(productId) {
+            if (!confirm("حذف القطعة؟")) return;
+            const { error } = await sb.from('products').delete().eq('id', productId);
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast("تم الحذف");
+        }
 
-async function markPaid(idx) {
-    const t = transactions[idx];
-    if (!t) return;
-    const { error } = await sb.from('orders').update({ payout_status: 'paid' }).eq('tx_id', t.txId);
-    if (error) { showToast("خطأ", error.message); return; }
-    await loadAll();
-    showToast("تم تحويل الرصيد للبائع بنجاح ⚡");
-}
+        async function markPaid(idx) {
+            const t = transactions[idx];
+            if (!t) return;
+            const { error } = await sb.from('orders').update({ payout_status: 'paid' }).eq('tx_id', t.txId);
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast("تم تحويل الرصيد للبائع بنجاح ⚡");
+        }
 
         function updateAdminDashboard() {
-
             let totalSales = 0, totalProfit = 0, totalDues = 0;
             transactions.forEach(t => { totalSales += t.totalPrice; totalProfit += t.ownerProfit; totalDues += t.sellerNet; });
 
@@ -1241,22 +1240,22 @@ async function markPaid(idx) {
             `).join('');
         }
 
-async function viewOrderReceipt(idx) {
-    const t = transactions[idx];
-    if (!t) return;
-    const url = await signedUrl(t.receiptPath);
-    document.getElementById('receipt-viewer-title').textContent = "إيصال التحويل";
-    document.getElementById('receipt-viewer-body').innerHTML = `<p>المشتري: ${t.buyer} (${t.buyerPhone})</p><img src="${url}" class="max-h-60 mx-auto rounded-xl">`;
-    document.getElementById('receipt-viewer-modal').classList.remove('hidden');
-}
-async function viewIdCard(id) {
-    const u = users.find(x => x.id === id);
-    if (!u) return;
-    const url = await signedUrl(u.idCardPath);
-    document.getElementById('receipt-viewer-title').textContent = "البطاقة الشخصية";
-    document.getElementById('receipt-viewer-body').innerHTML = `<p>${u.name} — ${u.phone}<br>الرقم القومي: ${u.nationalId}</p><img src="${url}" class="max-h-60 mx-auto rounded-xl">`;
-    document.getElementById('receipt-viewer-modal').classList.remove('hidden');
-}
+        async function viewOrderReceipt(idx) {
+            const t = transactions[idx];
+            if (!t) return;
+            const url = await signedUrl(t.receiptPath);
+            document.getElementById('receipt-viewer-title').textContent = "إيصال التحويل";
+            document.getElementById('receipt-viewer-body').innerHTML = `<p>المشتري: ${t.buyer} (${t.buyerPhone})</p><img src="${url}" class="max-h-60 mx-auto rounded-xl">`;
+            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+        }
+        async function viewIdCard(id) {
+            const u = users.find(x => x.id === id);
+            if (!u) return;
+            const url = await signedUrl(u.idCardPath);
+            document.getElementById('receipt-viewer-title').textContent = "البطاقة الشخصية";
+            document.getElementById('receipt-viewer-body').innerHTML = `<p>${u.name} — ${u.phone}<br>الرقم القومي: ${u.nationalId}</p><img src="${url}" class="max-h-60 mx-auto rounded-xl">`;
+            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
+        }
 
         function closeReceiptViewerModal() { document.getElementById('receipt-viewer-modal').classList.add('hidden'); }
 
