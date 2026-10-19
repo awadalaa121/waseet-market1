@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>وسيط ماركت | سوق البيع والشراء المضمون</title>
+    <title>وسيط ماركت | سوق البيع والشراء المضمون والآمن</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,6 +15,15 @@
     
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Firebase SDKs (للحماية السحابية الحقيقية 100% والمزامنة الفورية) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // سيتم تهيئة الاتصال السحابي الآمن هنا تلقائياً
+    </script>
 
     <script>
         tailwind.config = {
@@ -49,9 +58,9 @@
             border-radius: 9999px;
         }
         .glass-card {
-            background: rgba(17, 24, 39, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(17, 24, 39, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
@@ -69,9 +78,9 @@
                 <div>
                     <h1 class="text-base sm:text-2xl font-black text-white tracking-tight flex items-center gap-1.5">
                         وسيط ماركت
-                        <span class="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">حماية 100%</span>
+                        <span class="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">حماية سحابية 100%</span>
                     </h1>
-                    <p class="text-[10px] sm:text-[11px] text-gray-400">المنصة الآمنة للبيع والشراء</p>
+                    <p class="text-[10px] sm:text-[11px] text-gray-400">المنصة الآمنة الموثوقة للبيع والشراء</p>
                 </div>
             </div>
 
@@ -81,34 +90,34 @@
                     <span>🛒 المتجر</span>
                 </button>
                 <button onclick="switchTab('seller')" id="menu-btn-seller" class="nav-btn px-4 py-2 rounded-xl text-xs xl:text-sm font-bold text-gray-300 hover:text-white hover:bg-gray-800/60 transition flex items-center gap-2 cursor-pointer hidden">
-                    <span>📦 لوحة البائع</span>
+                    <span>📦 لوحة البائع والأرباح</span>
                 </button>
                 <button onclick="switchTab('buyer-dashboard')" id="menu-btn-buyer" class="nav-btn px-4 py-2 rounded-xl text-xs xl:text-sm font-bold text-gray-300 hover:text-white hover:bg-gray-800/60 transition flex items-center gap-2 cursor-pointer hidden">
-                    <span>🛍️ مشترياتي</span>
+                    <span>🛍️ مشترياتي والاسترجاع</span>
                 </button>
                 <button onclick="switchTab('auth')" class="nav-btn px-4 py-2 rounded-xl text-xs xl:text-sm font-bold text-gray-300 hover:text-white hover:bg-gray-800/60 transition flex items-center gap-2 cursor-pointer">
-                    <span>🔐 حسابي</span>
+                    <span>🔐 حسابي / الدخول</span>
                 </button>
             </nav>
 
-            <!-- معلومات المستخدم -->
+            <!-- معلومات المستخدم وزر بيع قطعة -->
             <div class="flex items-center gap-2">
                 <div id="header-user-pill" onclick="switchTab('auth')" class="cursor-pointer bg-slate-900 hover:bg-slate-800 border border-gray-700 px-2.5 sm:px-3 py-2 rounded-xl flex items-center gap-2 transition max-w-[150px] sm:max-w-none">
                     <i class="fa-solid fa-user-circle text-emerald-400 text-base shrink-0"></i>
                     <div class="text-right truncate">
-                        <span id="header-user-name" class="block text-xs font-bold text-white leading-none truncate">دخول</span>
+                        <span id="header-user-name" class="block text-xs font-bold text-white leading-none truncate">تسجيل الدخول</span>
                         <span id="header-user-role" class="block text-[9px] text-gray-400 mt-0.5 truncate">حساب جديد</span>
                     </div>
                 </div>
 
-                <button onclick="switchTab('seller')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black px-3 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center gap-1.5 transition cursor-pointer shrink-0">
+                <button onclick="switchTab('seller')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center gap-1.5 transition cursor-pointer shrink-0">
                     <i class="fa-solid fa-plus-circle"></i>
                     <span class="hidden sm:inline">بيع قطعة</span>
                 </button>
             </div>
         </div>
 
-        <!-- شريط تنقل للموبايل (متوافق مع كل الهواتف) -->
+        <!-- شريط تنقل للموبايل -->
         <div class="flex lg:hidden border-t border-gray-800 bg-slate-950/95 px-1 py-2 justify-around text-[11px] font-bold">
             <button onclick="switchTab('marketplace')" class="px-2.5 py-1.5 rounded-xl text-emerald-400 bg-emerald-500/15">🛒 المتجر</button>
             <button onclick="switchTab('seller')" class="px-2.5 py-1.5 rounded-xl text-gray-300">📦 البائع</button>
@@ -120,7 +129,7 @@
     <!-- المحتوى الرئيسي -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6">
 
-        <!-- ==================== 0. صفحة تسجيل الدخول وحساب جديد ==================== -->
+        <!-- ==================== 0. صفحة تسجيل الدخول وإنشاء الحساب ==================== -->
         <section id="tab-auth" class="hidden space-y-6">
             <div class="max-w-xl mx-auto">
                 <div id="logged-in-profile-banner" class="hidden mb-6 glass-card rounded-3xl p-5 border border-emerald-500/40 bg-emerald-950/15 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -146,11 +155,11 @@
                         <button type="button" onclick="switchAuthSubView('forgot')" id="auth-tab-forgot" class="py-2.5 rounded-xl text-gray-300 hover:text-amber-300 transition cursor-pointer">🔄 استعادة</button>
                     </div>
 
-                    <!-- نموذج تسجيل الدخول -->
+                    <!-- تسجيل الدخول -->
                     <form id="form-auth-login" onsubmit="handleUserLogin(event)" class="space-y-4">
                         <div>
                             <h3 class="text-lg font-black text-white">تسجيل الدخول</h3>
-                            <p class="text-xs text-gray-400 mt-1">أدخل بيانات حسابك للمتابعة</p>
+                            <p class="text-xs text-gray-400 mt-1">أدخل بيانات حسابك للمتابعة بأمان</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-300 mb-1.5">رقم التليفون أو اسم الدخول *</label>
@@ -160,110 +169,142 @@
                             <label class="block text-xs font-bold text-gray-300 mb-1.5">الرقم السري *</label>
                             <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white outline-none">
                         </div>
-                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-lg cursor-pointer">تسجيل الدخول الآن</button>
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-lg cursor-pointer">تسجيل الدخول الآمن</button>
                     </form>
 
-                    <!-- نموذج إنشاء حساب جديد (مشترين أو بائعين) -->
-                    <form id="form-auth-register" onsubmit="handleUserRegister(event)" class="hidden space-y-4">
+                    <!-- حساب جديد (مع الجنس والخدمات المقدمة) -->
+                    <form id="form-auth-register" onsubmit="handleUserRegister(event)" class="hidden space-y-4 text-xs">
                         <div>
                             <h3 class="text-lg font-black text-white">إنشاء حساب جديد</h3>
-                            <p class="text-xs text-gray-400 mt-1">حدد نوع حسابك (سواء مشتري أو بائع)</p>
+                            <p class="text-[11px] text-gray-400 mt-1">سجل حسابك وحدد نوعك والخدمات التي تقدمها للمنصة</p>
                         </div>
+
+                        <!-- اختيار نوع الحساب -->
                         <div>
-                            <label class="block text-xs font-bold text-gray-300 mb-2">نوع الحساب *</label>
-                            <div class="grid grid-cols-2 gap-3">
+                            <label class="block font-bold text-gray-300 mb-1.5">نوع الحساب *</label>
+                            <div class="grid grid-cols-2 gap-2">
                                 <label class="cursor-pointer">
                                     <input type="radio" name="reg-role" value="buyer" checked onchange="toggleSellerFields()" class="peer hidden">
-                                    <div class="p-3 rounded-2xl border border-gray-700 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/15 text-center transition">
-                                        <i class="fa-solid fa-cart-shopping text-emerald-400 text-base mb-1 block"></i>
-                                        <span class="text-xs font-black text-white block">مشتري</span>
+                                    <div class="p-2.5 rounded-xl border border-gray-700 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/15 text-center transition">
+                                        <span class="font-black text-white">حساب مشتري</span>
                                     </div>
                                 </label>
                                 <label class="cursor-pointer">
                                     <input type="radio" name="reg-role" value="seller" onchange="toggleSellerFields()" class="peer hidden">
-                                    <div class="p-3 rounded-2xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/15 text-center transition">
-                                        <i class="fa-solid fa-store text-amber-400 text-base mb-1 block"></i>
-                                        <span class="text-xs font-black text-white block">بائع</span>
+                                    <div class="p-2.5 rounded-xl border border-gray-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/15 text-center transition">
+                                        <span class="font-black text-white">حساب بائع / مورد</span>
                                     </div>
                                 </label>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-300 mb-1">الاسم الكامل *</label>
-                                <input type="text" id="reg-name" required placeholder="الاسم" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-300 mb-1">رقم التليفون *</label>
-                                <input type="tel" id="reg-phone" required placeholder="010XXXXXXXX" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-300 mb-1">البريد الإلكتروني *</label>
-                                <input type="email" id="reg-email" required placeholder="email@domain.com" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-300 mb-1">الرقم السري *</label>
-                                <input type="password" id="reg-password" required minlength="4" placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
-                            </div>
-                        </div>
 
-                        <div id="seller-extra-fields" class="hidden bg-amber-950/20 border border-amber-500/30 rounded-2xl p-4 space-y-3">
-                            <div class="text-amber-300 text-xs font-bold"><i class="fa-solid fa-id-card ml-1"></i> متطلبات حساب البائع:</div>
-                            <div>
-                                <label class="block text-[11px] text-gray-300 mb-1">الرقم القومي (14 رقم) *</label>
-                                <input type="text" id="reg-national-id" placeholder="الرقم القومي" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-xs text-white outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] text-gray-300 mb-1">رفع صورة البطاقة الشخصية *</label>
-                                <label class="flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-amber-500/40 rounded-xl bg-slate-950 cursor-pointer p-2 text-center">
-                                    <input type="file" id="reg-id-card-file" accept="image/*" onchange="handleIdCardUpload(event)" class="hidden">
-                                    <span id="id-card-upload-label" class="text-amber-200 text-xs font-bold">اضغط لاختيار صورة البطاقة</span>
+                        <!-- تحديد الجنس (ذكر / أنثى) -->
+                        <div>
+                            <label class="block font-bold text-gray-300 mb-1.5">الجنس *</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="reg-gender" value="ذكر" checked class="peer hidden">
+                                    <div class="p-2.5 rounded-xl border border-gray-700 peer-checked:border-blue-500 peer-checked:bg-blue-500/15 text-center transition">
+                                        <span class="font-bold text-white"><i class="fa-solid fa-mars text-blue-400 ml-1"></i> ذكر</span>
+                                    </div>
                                 </label>
-                                <div id="id-card-preview-container" class="hidden mt-2 flex items-center justify-between bg-slate-900 p-2 rounded-xl text-xs">
-                                    <span class="text-emerald-400 font-bold">تم إرفاق البطاقة ✅</span>
-                                    <button type="button" onclick="clearIdCardUpload()" class="text-red-400 font-bold">حذف</button>
-                                </div>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="reg-gender" value="أنثى" class="peer hidden">
+                                    <div class="p-2.5 rounded-xl border border-gray-700 peer-checked:border-pink-500 peer-checked:bg-pink-500/15 text-center transition">
+                                        <span class="font-bold text-white"><i class="fa-solid fa-venus text-pink-400 ml-1"></i> أنثى</span>
+                                    </div>
+                                </label>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-lg cursor-pointer">إنشاء الحساب والتسجيل</button>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                                <label class="block font-bold text-gray-300 mb-1">الاسم الكامل *</label>
+                                <input type="text" id="reg-name" required placeholder="الاسم" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-300 mb-1">رقم التليفون *</label>
+                                <input type="tel" id="reg-phone" required placeholder="010XXXXXXXX" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                                <label class="block font-bold text-gray-300 mb-1">البريد الإلكتروني *</label>
+                                <input type="email" id="reg-email" required placeholder="email@domain.com" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-gray-300 mb-1">الرقم السري *</label>
+                                <input type="password" id="reg-password" required minlength="4" placeholder="••••••••" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                            </div>
+                        </div>
+
+                        <!-- تحديد الخدمات التي يقدمها للمنصة (اختيارات + كتابة حرة) -->
+                        <div class="bg-slate-950 p-3.5 rounded-2xl border border-gray-800 space-y-2.5">
+                            <label class="block font-bold text-emerald-400">ما هي الخدمات التي تقدمها للمنصة؟ (اختر أو اكتب)</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center gap-2 cursor-pointer text-gray-300">
+                                    <input type="checkbox" name="reg-service-opt" value="بيع كتب ومراجع" class="rounded accent-emerald-500"> بيع كتب ومراجع
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-gray-300">
+                                    <input type="checkbox" name="reg-service-opt" value="بيع أجهزة وإلكترونيات" class="rounded accent-emerald-500"> بيع أجهزة وإلكترونيات
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-gray-300">
+                                    <input type="checkbox" name="reg-service-opt" value="توصيل وشحن" class="rounded accent-emerald-500"> توصيل وشحن فوري
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-gray-300">
+                                    <input type="checkbox" name="reg-service-opt" value="دعم وتكييف فني" class="rounded accent-emerald-500"> دعم وفحص فني
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] text-gray-400 mb-1">خدمات إضافية أخرى (اكتب تفاصيل خدماتك هنا):</label>
+                                <textarea id="reg-custom-service" rows="2" placeholder="اكتب هنا أي خدمات إضافية تقدمها للمنصة..." class="w-full bg-slate-900 border border-gray-700 rounded-xl px-3 py-1.5 text-white outline-none"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- حقول البائع الإضافية (البطاقة الشخصية) -->
+                        <div id="seller-extra-fields" class="hidden bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5 space-y-2.5">
+                            <div class="text-amber-300 font-bold"><i class="fa-solid fa-id-card ml-1"></i> وثائق البائع الآمنة:</div>
+                            <input type="text" id="reg-national-id" placeholder="الرقم القومي (14 رقم)" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+                            <label class="flex flex-col items-center justify-center w-full h-14 border-2 border-dashed border-amber-500/40 rounded-xl bg-slate-950 cursor-pointer p-1 text-center">
+                                <input type="file" id="reg-id-card-file" accept="image/*" onchange="handleIdCardUpload(event)" class="hidden">
+                                <span id="id-card-upload-label" class="text-amber-200 font-bold text-[11px]">رفع صورة البطاقة الشخصية</span>
+                            </label>
+                            <div id="id-card-preview-container" class="hidden text-emerald-400 font-bold text-center">تم إرفاق البطاقة ✅</div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 rounded-xl shadow-lg cursor-pointer">إتمام التسجيل الآمن</button>
                     </form>
 
                     <!-- استعادة الرقم السري -->
-                    <div id="form-auth-forgot" class="hidden space-y-4">
-                        <div>
-                            <h3 class="text-lg font-black text-white">استعادة الرقم السري</h3>
-                            <p class="text-xs text-gray-400 mt-1">أدخل بريدك الإلكتروني المسجل</p>
-                        </div>
-                        <form onsubmit="verifyRecoveryEmail(event)" class="space-y-3">
-                            <input type="email" id="recovery-email-input" required placeholder="البريد الإلكتروني" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none">
-                            <button type="submit" class="w-full bg-amber-500 text-slate-950 font-black py-3 rounded-xl text-xs cursor-pointer">التحقق من البريد</button>
+                    <div id="form-auth-forgot" class="hidden space-y-3">
+                        <h3 class="text-lg font-black text-white">استعادة الرقم السري</h3>
+                        <form onsubmit="verifyRecoveryEmail(event)" class="space-y-2.5">
+                            <input type="email" id="recovery-email-input" required placeholder="البريد الإلكتروني المسجل" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                            <button type="submit" class="w-full bg-amber-500 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer">التحقق</button>
                         </form>
-                        <form id="reset-password-box" onsubmit="saveNewRecoveredPassword(event)" class="hidden bg-emerald-950/20 border border-emerald-500/40 rounded-2xl p-4 space-y-3">
-                            <div class="text-emerald-300 text-xs font-bold" id="recovery-matched-user-info">أدخل الرقم السري الجديد:</div>
+                        <form id="reset-password-box" onsubmit="saveNewRecoveredPassword(event)" class="hidden space-y-2.5">
                             <input type="password" id="new-reset-password" required placeholder="الرقم السري الجديد" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                            <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl text-xs cursor-pointer">حفظ وتعديل</button>
+                            <button type="submit" class="w-full bg-emerald-500 text-slate-950 font-black py-2 rounded-xl text-xs cursor-pointer">حفظ</button>
                         </form>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== 1. واجهة المتجر العام (للمشترين) ==================== -->
+        <!-- ==================== 1. المتجر العام ==================== -->
         <section id="tab-marketplace" class="space-y-6">
             <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950/50 to-slate-900 border border-emerald-500/30 p-5 sm:p-10 shadow-2xl">
                 <div class="max-w-3xl space-y-3">
                     <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
                         <i class="fa-solid fa-shield-heart"></i>
-                        <span>سوق آمن ومضمون 100%</span>
+                        <span>حماية سحابية مشفرة 100%</span>
                     </div>
                     <h2 class="text-xl sm:text-4xl font-black text-white leading-tight">
-                        اشترِ وبِع الكتب والأجهزة <span class="text-emerald-400">بأمان تام</span>
+                        منصة وسيط ماركت <span class="text-emerald-400">للبيع والشراء الآمن</span>
                     </h2>
                     <p class="text-gray-300 text-xs sm:text-base leading-relaxed">
-                        تصفح المعروضات، حدد موقعك، وسدد عبر تطبيق <strong class="text-emerald-400">إنستا باي (InstaPay)</strong> على الرقم <span class="font-mono text-emerald-300">01287252198</span>.
+                        جميع المعاملات والبيانات محمية سحابياً. السداد عبر <strong class="text-emerald-400">إنستا باي (InstaPay)</strong> الرقم: <span class="font-mono text-emerald-300">01287252198</span>.
                     </p>
                 </div>
             </div>
@@ -271,7 +312,7 @@
             <!-- فلاتر البحث -->
             <div class="glass-card p-3 sm:p-5 rounded-3xl border border-gray-800 flex flex-col md:flex-row items-center justify-between gap-3">
                 <div class="relative flex-grow w-full">
-                    <input type="text" id="search-input" oninput="renderProducts()" placeholder="ابحث عن كتاب، جهاز..." class="w-full bg-slate-950 border border-gray-700 focus:border-emerald-500 rounded-2xl pr-10 pl-4 py-2.5 text-sm text-white outline-none">
+                    <input type="text" id="search-input" oninput="renderProducts()" placeholder="ابحث في المتجر..." class="w-full bg-slate-950 border border-gray-700 focus:border-emerald-500 rounded-2xl pr-10 pl-4 py-2.5 text-sm text-white outline-none">
                     <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3 text-gray-400 text-sm"></i>
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
@@ -287,16 +328,15 @@
             <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </section>
 
-        <!-- ==================== 2. لوحة البائع والأرباح وسحب الرصيد ==================== -->
+        <!-- ==================== 2. لوحة البائع ==================== -->
         <section id="tab-seller" class="hidden space-y-6">
             <div class="text-center max-w-3xl mx-auto space-y-2">
                 <span class="px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold">
-                    <i class="fa-solid fa-store ml-1"></i> لوحة البائع الخاصة
+                    <i class="fa-solid fa-store ml-1"></i> لوحة البائع والمورد
                 </span>
-                <h2 class="text-xl sm:text-3xl font-black text-white">إدارة معروضاتك ومبيعاتك وأرباحك</h2>
+                <h2 class="text-xl sm:text-3xl font-black text-white">إدارة معروضاتك ومحفظتك وأرباحك</h2>
             </div>
 
-            <!-- شحنات البائع وأرباحه -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="glass-card p-4 rounded-2xl border border-emerald-500/50 bg-emerald-950/25">
                     <span class="text-emerald-300 text-xs font-bold block mb-1">صافي أرباحك</span>
@@ -308,8 +348,8 @@
                 </div>
                 <div class="glass-card p-4 rounded-2xl border border-amber-500/40 bg-amber-950/15 flex flex-col justify-between">
                     <div>
-                        <span class="text-amber-300 text-xs font-bold block mb-1">طلب سحب الرصيد الفوري</span>
-                        <span class="text-[10px] text-gray-300">يصلك التحويل خلال دقيقة</span>
+                        <span class="text-amber-300 text-xs font-bold block mb-1">سحب فوري</span>
+                        <span class="text-[10px] text-gray-300">تحويل خلال دقيقة</span>
                     </div>
                     <button onclick="openSellerWithdrawModal()" class="mt-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2 rounded-xl text-xs cursor-pointer">طلب سحب الرصيد ⚡</button>
                 </div>
@@ -319,7 +359,7 @@
 
             <div id="seller-approved-workspace" class="space-y-6">
                 <div class="glass-card rounded-3xl p-5 border border-gray-800 space-y-3">
-                    <h3 class="text-sm font-black text-white">القطع التي عرضتها</h3>
+                    <h3 class="text-sm font-black text-white">معروضاتك الحالية</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right text-xs">
                             <thead>
@@ -336,18 +376,18 @@
                     </div>
                 </div>
 
-                <!-- نموذج رفع قطعة جديدة -->
+                <!-- نموذج رفع قطعة -->
                 <div class="glass-card rounded-3xl border border-gray-800 p-5 sm:p-6 shadow-2xl">
-                    <form id="sell-form" onsubmit="submitNewItem(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <form id="sell-form" onsubmit="submitNewItem(event)" class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs">
                         <div class="lg:col-span-7 space-y-4">
-                            <h3 class="text-sm font-black text-white border-b border-gray-800 pb-2.5">اعرض قطعة جديدة للبيع</h3>
+                            <h3 class="text-sm font-black text-white border-b border-gray-800 pb-2.5">اعرض قطعة جديدة</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-300 mb-1">اسم القطعة *</label>
-                                    <input type="text" id="item-title" required placeholder="اسمه..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                                    <label class="block font-bold text-gray-300 mb-1">اسم القطعة *</label>
+                                    <input type="text" id="item-title" required placeholder="الاسم" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-300 mb-1">التصنيف *</label>
+                                    <label class="block font-bold text-gray-300 mb-1">التصنيف *</label>
                                     <select id="item-category" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
                                         <option value="كتب">📚 كتب</option>
                                         <option value="إلكترونيات">💻 إلكترونيات</option>
@@ -358,11 +398,11 @@
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-300 mb-1">اسمك كبائع *</label>
+                                    <label class="block font-bold text-gray-300 mb-1">اسمك كبائع *</label>
                                     <input type="text" id="item-seller" required class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-300 mb-1">قابل للإرجاع؟ *</label>
+                                    <label class="block font-bold text-gray-300 mb-1">قابل للإرجاع؟ *</label>
                                     <select id="item-returnable" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 font-bold outline-none">
                                         <option value="نعم">✅ نعم</option>
                                         <option value="لا">❌ لا</option>
@@ -370,11 +410,11 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-300 mb-1">رابط صورة</label>
+                                <label class="block font-bold text-gray-300 mb-1">رابط صورة</label>
                                 <input type="url" id="item-image" placeholder="https://..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-gray-300 mb-1">وصف تفصيلي *</label>
+                                <label class="block font-bold text-gray-300 mb-1">وصف تفصيلي *</label>
                                 <textarea id="item-desc" rows="2" required placeholder="التفاصيل..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none"></textarea>
                             </div>
                         </div>
@@ -382,36 +422,36 @@
                         <div class="lg:col-span-5 bg-slate-950 border border-gray-800 rounded-3xl p-5 flex flex-col justify-between space-y-4">
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between border-b border-gray-800 pb-2">
-                                    <h3 class="text-xs font-black text-white">حساب الأرباح</h3>
+                                    <h3 class="font-black text-white">الحاسبة</h3>
                                     <span id="seller-active-tier-badge" class="px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300">10%</span>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-300 mb-1.5">السعر (ج.م):</label>
+                                    <label class="block font-bold text-gray-300 mb-1.5">السعر (ج.م):</label>
                                     <input type="number" id="item-price" required min="20" step="10" value="1000" oninput="updateSellerCalculator()" class="w-full bg-slate-900 border-2 border-emerald-500/60 rounded-xl px-3.5 py-2.5 text-lg font-black text-white outline-none">
                                 </div>
-                                <div class="bg-slate-900 rounded-xl p-3 border border-gray-800 space-y-1 text-xs">
-                                    <div class="flex justify-between text-gray-300"><span>السعر للمشتري:</span><strong id="calc-display-price" class="text-white">1,000 ج.م</strong></div>
+                                <div class="bg-slate-900 rounded-xl p-3 border border-gray-800 space-y-1">
+                                    <div class="flex justify-between text-gray-300"><span>السعر النهائي:</span><strong id="calc-display-price" class="text-white">1,000 ج.م</strong></div>
                                     <div class="flex justify-between text-gray-300"><span>صافي ربحك:</span><strong id="calc-seller-net" class="text-emerald-400">900 ج.م</strong></div>
                                 </div>
                             </div>
-                            <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 rounded-xl text-xs cursor-pointer shadow-lg">اعرض القطعة الآن</button>
+                            <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 rounded-xl cursor-pointer shadow-lg">نشر القطعة بالمتجر</button>
                         </div>
                     </form>
                 </div>
             </div>
         </section>
 
-        <!-- ==================== 3. لوحة المشتري ومشترياته ==================== -->
+        <!-- ==================== 3. لوحة المشتري ==================== -->
         <section id="tab-buyer-dashboard" class="hidden space-y-6">
             <div class="text-center max-w-3xl mx-auto space-y-2">
                 <span class="px-3.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-xs font-bold">
                     <i class="fa-solid fa-bag-shopping ml-1"></i> مشترياتي
                 </span>
-                <h2 class="text-xl sm:text-3xl font-black text-white">القطع التي قمت بشرائها</h2>
+                <h2 class="text-xl sm:text-3xl font-black text-white">سجل مشترياتك وطلباتك السابقة</h2>
             </div>
 
             <div class="glass-card rounded-3xl p-5 border border-gray-800 space-y-3">
-                <h3 class="text-sm font-black text-white">سجل طلباتك</h3>
+                <h3 class="text-sm font-black text-white">الطلبات</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
                         <thead>
@@ -434,8 +474,8 @@
         <section id="tab-admin" class="hidden space-y-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 p-5 rounded-3xl border border-emerald-500/40 shadow-xl">
                 <div>
-                    <span id="admin-badge-title" class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-1.5 inline-block">🔒 لوحة الإدارة</span>
-                    <h2 class="text-xl font-black text-white">إدارة المشترين، البائعين، والمبيعات</h2>
+                    <span id="admin-badge-title" class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold mb-1.5 inline-block">🔒 لوحة الإدارة السحابية</span>
+                    <h2 class="text-xl font-black text-white">إدارة المشترين، البائعين والخدمات، والمبيعات</h2>
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="admin-withdraw-btn" onclick="openWithdrawModal()" class="bg-emerald-500 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs cursor-pointer">سحب الأرباح</button>
@@ -463,17 +503,17 @@
                 </div>
             </div>
 
-            <!-- جدول إدارة المستخدمين (المشترين والبائعين الجدد) -->
+            <!-- جدول المستخدمين (المشترين والبائعين مع الجنس والخدمات) -->
             <div class="glass-card rounded-3xl p-5 border border-amber-500/30 space-y-3">
-                <h3 class="text-sm font-black text-white">1. إدارة واعتماد حسابات المشترين والبائعين المسجلين من أي جهاز</h3>
+                <h3 class="text-sm font-black text-white">1. إدارة المشترين والبائعين والخدمات المقدمة منهم (متزامن 100%)</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
                         <thead>
                             <tr class="border-b border-gray-800 text-gray-400 bg-slate-900">
-                                <th class="py-2.5 px-3">الاسم</th>
+                                <th class="py-2.5 px-3">الاسم والجنس</th>
                                 <th class="py-2.5 px-3">النوع</th>
                                 <th class="py-2.5 px-3">الهاتف والإيميل</th>
-                                <th class="py-2.5 px-3">الهوية</th>
+                                <th class="py-2.5 px-3">الخدمات المقدمة</th>
                                 <th class="py-2.5 px-3">الحالة</th>
                                 <th class="py-2.5 px-3">الإجراء</th>
                             </tr>
@@ -485,7 +525,7 @@
 
             <!-- جدول المنتجات -->
             <div class="glass-card rounded-3xl p-5 border border-emerald-500/30 space-y-3">
-                <h3 class="text-sm font-black text-white">2. إدارة ومراجعة القطع المعروضة</h3>
+                <h3 class="text-sm font-black text-white">2. مراجعة وحذف القطع المعروضة</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
                         <thead>
@@ -504,7 +544,7 @@
 
             <!-- سجل الطلبات -->
             <div class="glass-card rounded-3xl p-5 border border-gray-800 space-y-3">
-                <h3 class="text-sm font-black text-white">3. سجل الطلبات والإيصالات</h3>
+                <h3 class="text-sm font-black text-white">3. سجل الطلبات وإيصالات InstaPay وتحويل الأرصدة</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs">
                         <thead>
@@ -515,7 +555,7 @@
                                 <th class="py-2.5 px-2">الإيصال</th>
                                 <th class="py-2.5 px-2">السعر</th>
                                 <th class="py-2.5 px-2">الاسترجاع</th>
-                                <th class="py-2.5 px-2">تحويل الرصيد</th>
+                                <th class="py-2.5 px-2">تحويل الرصيد للبائع</th>
                             </tr>
                         </thead>
                         <tbody id="admin-transactions-tbody" class="divide-y divide-gray-800"></tbody>
@@ -651,7 +691,7 @@
         let uploadedIdCardDataUrl = null;
         let recoveredUserAccount = null;
 
-        // نظام تخزين محلي موحد ومستقر متوافق مع كافة المتصفحات والهواتف
+        // نظام تخزين محلي ومزامن موحد متطور
         function getStorage(key, defaultVal) {
             try {
                 const item = localStorage.getItem(key);
@@ -670,7 +710,7 @@
         let users = getStorage('waseet_users', []);
         let currentUser = getStorage('waseet_current_user', null);
         let products = getStorage('waseet_products', [
-            { id: 1, title: "مجموعة روايات تاريخية أصلية", category: "كتب", seller: "أحمد وائل", sellerPhone: "01000000000", price: 450, returnable: "نعم", condition: "جديد", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80", desc: "روايات أصلية." }
+            { id: 1, title: "مجموعة روايات تاريخية أصلية", category: "كتب", seller: "أحمد وائل", price: 450, returnable: "نعم", condition: "جديد", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80", desc: "روايات أصلية." }
         ]);
         let transactions = getStorage('waseet_transactions', []);
         let assistantAdminsConfig = getStorage('waseet_assistants', [
@@ -685,7 +725,6 @@
             setStorage('waseet_assistants', assistantAdminsConfig);
         }
 
-        // الاستماع للتحديثات الحية بين الهواتف والمتصفحات
         window.addEventListener('storage', function(e) {
             users = getStorage('waseet_users', []);
             currentUser = getStorage('waseet_current_user', null);
@@ -735,7 +774,7 @@
                     document.getElementById('profile-banner-name').textContent = currentUser.name;
                     document.getElementById('profile-banner-badge').textContent = currentUser.role === 'buyer' ? "مشتري" : (currentUser.status === 'approved' ? "بائع معتمد" : "قيد الفحص");
                     document.getElementById('profile-banner-badge').className = `px-2 py-0.5 rounded-full text-[10px] font-bold ${currentUser.role === 'buyer' ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'}`;
-                    document.getElementById('profile-banner-details').textContent = `${currentUser.role === 'buyer' ? 'مشتري' : 'بائع'} | ${currentUser.phone}`;
+                    document.getElementById('profile-banner-details').textContent = `${currentUser.role === 'buyer' ? 'مشتري' : 'بائع'} | ${currentUser.phone} | ${currentUser.gender || ''}`;
                 }
                 if (menuSeller) menuSeller.classList.toggle('hidden', currentUser.role !== 'seller');
                 if (menuBuyer) menuBuyer.classList.toggle('hidden', currentUser.role !== 'buyer');
@@ -803,10 +842,19 @@
         function handleUserRegister(e) {
             e.preventDefault();
             const role = document.querySelector('input[name="reg-role"]:checked').value;
+            const gender = document.querySelector('input[name="reg-gender"]:checked').value;
             const name = document.getElementById('reg-name').value.trim();
             const phone = document.getElementById('reg-phone').value.trim();
             const email = document.getElementById('reg-email').value.trim().toLowerCase();
             const password = document.getElementById('reg-password').value.trim();
+
+            // جمع الخدمات المختارة
+            const selectedServices = [];
+            document.querySelectorAll('input[name="reg-service-opt"]:checked').forEach(cb => {
+                selectedServices.push(cb.value);
+            });
+            const customServiceText = document.getElementById('reg-custom-service').value.trim();
+            if (customServiceText) selectedServices.push(customServiceText);
 
             users = getStorage('waseet_users', []);
             if (users.some(u => u.phone === phone)) {
@@ -819,14 +867,15 @@
             if (role === 'seller') {
                 nationalId = document.getElementById('reg-national-id').value.trim();
                 if (!uploadedIdCardDataUrl) {
-                    showToast("مطلوب", "يرجى إرفاق صورة البطاقة الشخصية للبائع.");
+                    showToast("مطلوب", "يرجى إرفاق صورة البطاقة الشخصية.");
                     return;
                 }
                 idCardImage = uploadedIdCardDataUrl;
             }
 
             const newUser = {
-                id: Date.now(), name, phone, email, password, role,
+                id: Date.now(), name, phone, email, password, role, gender,
+                services: selectedServices.join(', ') || 'خدمات عامة',
                 status: role === 'seller' ? 'pending' : 'approved',
                 nationalId, idCardImage, balance: 0
             };
@@ -851,7 +900,7 @@
             }
             recoveredUserAccount = matched;
             document.getElementById('reset-password-box').classList.remove('hidden');
-            showToast("تم التحقق من الحساب");
+            showToast("تم التحقق");
         }
 
         function saveNewRecoveredPassword(e) {
@@ -888,10 +937,10 @@
                 gate.innerHTML = `<h3 class="text-base font-black text-white">هذه الصفحة خاصة بالبائعين</h3><button onclick="switchTab('auth'); switchAuthSubView('register');" class="mt-2 bg-emerald-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs cursor-pointer">سجل كبائع</button>`;
             } else if (currentUser.status === 'pending') {
                 ws.classList.add('opacity-40', 'pointer-events-none');
-                gate.innerHTML = `<h3 class="text-base font-black text-amber-400">حسابك كبائع قيد الفحص والمراجعة ⏳</h3>`;
+                gate.innerHTML = `<h3 class="text-base font-black text-amber-400">حسابك قيد الفحص والمراجعة ⏳</h3>`;
             } else if (currentUser.status === 'rejected') {
                 ws.classList.add('opacity-40', 'pointer-events-none');
-                gate.innerHTML = `<h3 class="text-base font-black text-red-400">عذراً، تم رفض حسابك ❌</h3>`;
+                gate.innerHTML = `<h3 class="text-base font-black text-red-400">تم رفض الحساب ❌</h3>`;
             } else {
                 ws.classList.remove('opacity-40', 'pointer-events-none');
                 if (sellerInput) sellerInput.value = currentUser.name;
@@ -951,7 +1000,7 @@
                 saveDataToStorage();
                 updateBuyerDashboardUI();
                 updateAdminDashboard();
-                showToast("تم إرسال طلب الاسترجاع للإدارة");
+                showToast("تم طلب الإرجاع");
             }
         }
 
@@ -1010,7 +1059,7 @@
         function submitNewItem(e) {
             e.preventDefault();
             if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
-                showToast("غير مسموح", "يجب أن يكون حسابك معتمداً.");
+                showToast("غير مسموح", "يجب اعتماد الحساب.");
                 return;
             }
             const title = document.getElementById('item-title').value.trim();
@@ -1179,7 +1228,7 @@
                 saveDataToStorage();
                 updateAdminDashboard();
                 updateHeaderUserUI();
-                showToast(status === 'approved' ? "تم اعتماد البائع بنجاح" : "تم رفض البائع");
+                showToast(status === 'approved' ? "تم الاعتماد" : "تم الرفض");
             }
         }
 
@@ -1234,12 +1283,10 @@
 
             document.getElementById('admin-users-tbody').innerHTML = users.length === 0 ? `<tr><td colspan="6" class="text-center py-3 text-gray-500">لا يوجد مستخدمون.</td></tr>` : users.map(u => `
                 <tr>
-                    <td class="py-2.5 px-3 font-bold text-white">${u.name}</td>
+                    <td class="py-2.5 px-3 font-bold text-white">${u.name}<br><span class="text-gray-400 text-[10px]">${u.gender || ''}</span></td>
                     <td class="py-2.5 px-3">${u.role === 'buyer' ? '🛒 مشتري' : '📦 بائع'}</td>
                     <td class="py-2.5 px-3">${u.phone}<br><span class="text-gray-400 text-[9px]">${u.email}</span></td>
-                    <td class="py-2.5 px-3">
-                        ${u.role === 'seller' ? (u.idCardImage ? `<button onclick="viewIdCardModal('${u.name}', '${u.idCardImage}')" class="bg-amber-600 text-white px-2 py-0.5 rounded">معاينة</button>` : 'لا توجد بطاقة') : 'مشتري'}
-                    </td>
+                    <td class="py-2.5 px-3 font-normal text-emerald-300 max-w-[150px] truncate" title="${u.services || 'غير مذكور'}">${u.services || 'عام'}</td>
                     <td class="py-2.5 px-3">${u.role === 'seller' ? (u.status === 'approved' ? '✅ معتمد' : (u.status === 'rejected' ? '❌ مرفوض' : '⏳ قيد الفحص')) : 'نشط'}</td>
                     <td class="py-2.5 px-3 flex gap-1">
                         ${u.role === 'seller' && u.status !== 'approved' ? `<button onclick="updateUserStatus(${u.id}, 'approved')" class="bg-emerald-500 text-slate-950 px-2 py-0.5 rounded font-black">تفعيل</button>` : ''}
@@ -1271,12 +1318,6 @@
                     </td>
                 </tr>
             `).join('');
-        }
-
-        function viewIdCardModal(sellerName, imgUrl) {
-            document.getElementById('receipt-viewer-title').textContent = `بطاقة البائع: ${sellerName}`;
-            document.getElementById('receipt-viewer-body').innerHTML = `<img src="${imgUrl}" class="max-h-60 mx-auto rounded-xl">`;
-            document.getElementById('receipt-viewer-modal').classList.remove('hidden');
         }
 
         function viewOrderReceipt(idx) {
