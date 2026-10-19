@@ -714,12 +714,21 @@
         let uploadedIdCardDataUrl = null;
         let recoveredUserAccount = null;
 
-        // تحميل وتخزين البيانات عبر localStorage
-        let users = JSON.parse(localStorage.getItem('waseet_users')) || [];
+        // قاعدة البيانات المركزية الافتراضية الثابتة الموحدة
+        const GLOBAL_DEFAULT_USERS = [
+            { id: 101, name: "تجيبي (تجريبي بائع)", phone: "01287252198", email: "awad.alaa12345678@gmail.com", password: "123", role: "seller", status: "pending", nationalId: "29901010101010", idCardImage: "https://placehold.co/400x250/111827/10b981?text=ID+Card" }
+        ];
+
+        // تهيئة وحفظ البيانات الموحدة عبر localStorage
+        let users = JSON.parse(localStorage.getItem('waseet_users'));
+        if (!users || users.length === 0) {
+            users = GLOBAL_DEFAULT_USERS;
+            localStorage.setItem('waseet_users', JSON.stringify(users));
+        }
+
         let currentUser = JSON.parse(localStorage.getItem('waseet_current_user')) || null;
         let products = JSON.parse(localStorage.getItem('waseet_products')) || [
-            { id: 1, title: "مجموعة روايات تاريخية (5 كتب أصلية)", category: "كتب", seller: "أحمد وائل", sellerPhone: "01000000000", price: 450, returnable: "نعم", condition: "جديد تماماً", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80", desc: "روايات أصلية فاخرة." },
-            { id: 2, title: "جهاز قارئ كتب Kindle Paperwhite", category: "أجهزة", seller: "محمود حسن", sellerPhone: "01111111111", price: 2000, returnable: "نعم", condition: "مستعمل كالجديد", image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80", desc: "شاشة مريحة للعين وبطارية تدوم لأسابيع." }
+            { id: 1, title: "مجموعة روايات تاريخية (5 كتب أصلية)", category: "كتب", seller: "أحمد وائل", sellerPhone: "01000000000", price: 450, returnable: "نعم", condition: "جديد تماماً", image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80", desc: "روايات أصلية فاخرة." }
         ];
         let transactions = JSON.parse(localStorage.getItem('waseet_transactions')) || [];
 
@@ -730,9 +739,9 @@
             localStorage.setItem('waseet_transactions', JSON.stringify(transactions));
         }
 
-        // الاستماع للتحديثات الحية بين التبويبات والموبايلات
+        // المزامنة الحية والفورية بين المتصفحات والتطبيقات
         window.addEventListener('storage', function(e) {
-            users = JSON.parse(localStorage.getItem('waseet_users')) || [];
+            users = JSON.parse(localStorage.getItem('waseet_users')) || GLOBAL_DEFAULT_USERS;
             currentUser = JSON.parse(localStorage.getItem('waseet_current_user')) || null;
             products = JSON.parse(localStorage.getItem('waseet_products')) || [];
             transactions = JSON.parse(localStorage.getItem('waseet_transactions')) || [];
@@ -848,7 +857,7 @@
             const role = document.querySelector('input[name="reg-role"]:checked').value;
             const name = document.getElementById('reg-name').value.trim();
             const phone = document.getElementById('reg-phone').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
             const password = document.getElementById('reg-password').value.trim();
 
             if (users.some(u => u.phone === phone)) {
@@ -883,12 +892,14 @@
 
         function verifyRecoveryEmail(e) {
             e.preventDefault();
-            const email = document.getElementById('recovery-email-input').value.trim().toLowerCase();
-            const matched = users.find(u => u.email.toLowerCase() === email);
+            const emailInput = document.getElementById('recovery-email-input').value.trim().toLowerCase();
+            // تحديث جلب المستخدمين من القائمة الموحدة
+            users = JSON.parse(localStorage.getItem('waseet_users')) || GLOBAL_DEFAULT_USERS;
+            const matched = users.find(u => u.email.toLowerCase() === emailInput);
             const resetBox = document.getElementById('reset-password-box');
             if (!matched) {
                 resetBox.classList.add('hidden');
-                showToast("الإيميل غير مسجل ⚠️");
+                showToast("الإيميل غير مسجل في قاعدة البيانات ⚠️");
                 return;
             }
             recoveredUserAccount = matched;
@@ -902,8 +913,13 @@
             const p1 = document.getElementById('new-reset-password').value;
             const p2 = document.getElementById('confirm-reset-password').value;
             if (p1 !== p2) { showToast("خطأ", "الرقمان غير متطابقين."); return; }
-            recoveredUserAccount.password = p1;
-            currentUser = recoveredUserAccount;
+            
+            // تحديث الرقم السري في القائمة المركزية وحفظها
+            const target = users.find(u => u.id === recoveredUserAccount.id);
+            if (target) {
+                target.password = p1;
+            }
+            currentUser = target;
             saveDataToStorage();
             updateHeaderUserUI();
             switchAuthSubView('login');
@@ -1208,6 +1224,7 @@
 
         // اعتماد أو رفض البائع وإرسال إشعار SMS وإيميل محاكى
         function updateUserStatus(userId, status) {
+            users = JSON.parse(localStorage.getItem('waseet_users')) || GLOBAL_DEFAULT_USERS;
             const u = users.find(user => user.id === userId);
             if (u) {
                 u.status = status;
@@ -1272,6 +1289,9 @@
         }
 
         function updateAdminDashboard() {
+            // تحديث جلب المستخدمين دائماً من القائمة الموحدة لضمان ظهور أي مسجل جديد
+            users = JSON.parse(localStorage.getItem('waseet_users')) || GLOBAL_DEFAULT_USERS;
+
             let totalSales = 0, totalProfit = 0, totalDues = 0;
             transactions.forEach(t => { totalSales += t.totalPrice; totalProfit += t.ownerProfit; totalDues += t.sellerNet; });
 
@@ -1291,7 +1311,7 @@
                     <td class="py-3 px-4">
                         ${u.role === 'seller' ? `
                             <div class="space-y-1">
-                                <span class="block font-mono text-gray-300">القومي: ${u.nationalId}</span>${u.idCardImage ? `<button onclick="viewIdCardModal('${u.name}', '${u.idCardImage}')" class="bg-amber-600 hover:bg-amber-500 text-white px-2 py-0.5 rounded font-bold cursor-pointer">معاينة البطاقة</button>` : '<span class="text-gray-500">لا توجد بطاقة</span>'}
+                                <span class="block font-mono text-gray-300">القومي: ${u.nationalId}</span>${u.idCardImage ? `<button onclick="viewIdCardModal('${u.name}', '${u.idCardImage}')" class="bg-amber-600 text-white px-2 py-0.5 rounded font-bold cursor-pointer">معاينة البطاقة</button>` : '<span class="text-gray-500">لا توجد بطاقة</span>'}
                             </div>
                         ` : '<span class="text-blue-400 font-bold">حساب مشتري مسجل</span>'}
                     </td>
