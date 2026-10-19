@@ -103,7 +103,7 @@
                     </div>
                 </div>
 
-                <button onclick="switchTab('seller')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center gap-1.5 transition cursor-pointer shrink-0">
+                <button id="sell-btn" onclick="switchTab('seller')" class="hidden bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg flex items-center gap-1.5 transition cursor-pointer shrink-0">
                     <i class="fa-solid fa-plus-circle"></i>
                     <span class="hidden sm:inline">بيع قطعة</span>
                 </button>
@@ -778,6 +778,12 @@
                 if (menuSeller) menuSeller.classList.toggle('hidden', currentUser.role !== 'seller');
                 if (menuBuyer) menuBuyer.classList.toggle('hidden', currentUser.role !== 'buyer');
             }
+            const sellBtn = document.getElementById('sell-btn');
+            if (sellBtn) {
+                const ok = !!currentUser && currentUser.role === 'seller' && currentUser.status === 'approved';
+                sellBtn.classList.toggle('hidden', !ok);
+                sellBtn.classList.toggle('flex', ok);
+            }
             updateSellerKycGateUI();
             updateSellerDashboardUI();
             updateBuyerDashboardUI();
@@ -895,16 +901,16 @@ async function logoutUser() {
             if (!gate || !ws) return;
 
             if (!currentUser || currentUser.role !== 'seller') {
-                ws.classList.add('opacity-40', 'pointer-events-none');
+                ws.classList.add('hidden');
                 gate.innerHTML = `<h3 class="text-base font-black text-white">هذه الصفحة خاصة بالبائعين</h3><button onclick="switchTab('auth'); switchAuthSubView('register');" class="mt-2 bg-emerald-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs cursor-pointer">سجل كبائع</button>`;
             } else if (currentUser.status === 'pending') {
-                ws.classList.add('opacity-40', 'pointer-events-none');
+                ws.classList.add('hidden');
                 gate.innerHTML = `<h3 class="text-base font-black text-amber-400">حسابك قيد الفحص والمراجعة ⏳</h3>`;
             } else if (currentUser.status === 'rejected') {
-                ws.classList.add('opacity-40', 'pointer-events-none');
+                ws.classList.add('hidden');
                 gate.innerHTML = `<h3 class="text-base font-black text-red-400">تم رفض الحساب ❌</h3>`;
             } else {
-                ws.classList.remove('opacity-40', 'pointer-events-none');
+                ws.classList.remove('hidden');
                 if (sellerInput) sellerInput.value = currentUser.rawName;
                 gate.innerHTML = `<h3 class="text-xs font-bold text-emerald-400">حساب بائع معتمد ومفعل: ${currentUser.name} ✅</h3>`;
             }
