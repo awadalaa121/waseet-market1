@@ -99,6 +99,7 @@
 
             <!-- معلومات المستخدم وزر بيع قطعة -->
             <div class="flex items-center gap-2">
+                <button onclick="openCart()" title="السلة" class="relative w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-gray-700 text-gray-300 hover:text-white flex items-center justify-center cursor-pointer shrink-0 transition"><i class="fa-solid fa-cart-shopping"></i><span id="cart-count" style="display:none" class="absolute -top-1.5 -right-1.5 bg-emerald-500 text-slate-950 text-[10px] font-black rounded-full min-w-[16px] h-4 px-1 items-center justify-center">0</span></button>
                 <div id="header-user-wrap" class="relative flex items-center gap-1.5">
                     <div id="header-user-pill" onclick="headerPillClick()" class="cursor-pointer bg-slate-900 hover:bg-slate-800 border border-gray-700 px-2.5 sm:px-3 py-2 rounded-xl flex items-center gap-2 transition max-w-[150px] sm:max-w-none">
                     <i class="fa-solid fa-user-circle text-emerald-400 text-base shrink-0"></i>
@@ -418,8 +419,8 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block font-bold text-gray-300 mb-1">رابط صورة</label>
-                                <input type="url" id="item-image" placeholder="https://..." class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
+                                <label class="block font-bold text-gray-300 mb-1">صورة المنتج (من الهاتف أو الكاميرا) *</label>
+                                <input type="file" id="item-image-file" accept="image/*" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
                             </div>
                             <div>
                                 <label class="block font-bold text-gray-300 mb-1">وصف تفصيلي *</label>
@@ -709,6 +710,35 @@
             </div>
         </div>
     </div>
+    <div id="product-modal" class="hidden fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-3">
+        <div dir="rtl" class="bg-slate-900 border border-gray-700 rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto p-4 space-y-3">
+            <button onclick="closeProduct()" class="text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
+            <div id="product-body" class="space-y-3"></div>
+        </div>
+    </div>
+    <div id="cart-modal" class="hidden fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-3">
+        <div dir="rtl" class="bg-slate-900 border border-gray-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 space-y-3">
+            <div class="flex justify-between items-center"><h3 class="font-black text-white">🛒 سلة المشتريات</h3><button onclick="closeCart()" class="text-gray-400 hover:text-white text-xl cursor-pointer">✕</button></div>
+            <div id="cart-items" class="space-y-2"></div>
+            <div class="flex justify-between border-t border-gray-800 pt-2 text-sm"><span class="text-gray-400">الإجمالي</span><strong id="cart-total" class="text-white">0</strong></div>
+            <p class="text-[10px] text-gray-500">اضغط "شراء" لإتمام كل منتج على حدة (تحويل وإيصال لكل طلب).</p>
+        </div>
+    </div>
+    <div id="edit-modal" class="hidden fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-3">
+        <div dir="rtl" class="bg-slate-900 border border-gray-700 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 space-y-3 text-xs">
+            <div class="flex justify-between items-center"><h3 class="font-black text-white text-lg">✏️ تعديل المنتج</h3><button onclick="closeEdit()" class="text-gray-400 text-xl cursor-pointer">✕</button></div>
+            <input id="edit-title" placeholder="اسم القطعة" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+            <div class="grid grid-cols-2 gap-2">
+                <select id="edit-cat" class="bg-slate-950 border border-gray-700 rounded-xl px-2 py-2 text-white"></select>
+                <select id="edit-ret" class="bg-slate-950 border border-gray-700 rounded-xl px-2 py-2 text-white"></select>
+            </div>
+            <input id="edit-price" type="number" min="1" placeholder="السعر" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
+            <textarea id="edit-desc" rows="3" placeholder="الوصف" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none"></textarea>
+            <div><label class="text-gray-400">صورة جديدة (اختياري)</label><input id="edit-img" type="file" accept="image/*" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white mt-1"></div>
+            <p class="text-[10px] text-amber-400">تعديل السعر يتم فوراً. تعديل الاسم أو الوصف أو الصورة أو التصنيف يرجع المنتج للمراجعة قبل ظهوره.</p>
+            <button onclick="saveEdit()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">حفظ التعديلات</button>
+        </div>
+    </div>
 <script>
         let currentCategoryFilter = 'all';
         let selectedCheckoutItemId = null;
@@ -726,17 +756,25 @@
         const SUPABASE_URL = "https://kgjiictceiusqanonvnb.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_ihbKSjLdqNH2QGQOXn7WQw_tb9pNRmy";
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let lastUid;
+        sb.auth.onAuthStateChange((ev, session) => {
+            const uid = session ? session.user.id : null;
+            if (lastUid !== undefined && uid !== lastUid) setTimeout(initSession, 0);
+            lastUid = uid;
+        });
 
         let users = [], currentUser = null, products = [], transactions = [];
         let adminEmail = '';
+        let ratings = [], ratedTx = new Set(), cart = [];
+        try { cart = JSON.parse(localStorage.getItem('waseet_cart') || '[]'); } catch (e) { cart = []; }
         let uploadedReceiptFile = null, uploadedIdCardFile = null;
 
         const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const authEmail = phone => String(phone).replace(/\D/g, '') + '@waseet-users.com';
 
         const mapUser = r => ({ id:r.id, rawName:r.name, name:esc(r.name), phone:esc(r.phone), email:esc(r.email), role:r.role, gender:esc(r.gender), services:esc(r.services), status:r.status, nationalId:esc(r.national_id), idCardPath:r.id_card_path, emailVerified:!!r.email_verified, balance:0 });
-        const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), returnable:r.returnable, condition:r.condition, image:esc(r.image), desc:esc(r.description) });
-        const mapOrder = r => ({ txId:r.tx_id, itemTitle:esc(r.item_title), buyer:esc(r.buyer), buyerPhone:esc(r.buyer_phone), buyerLocation:r.buyer_location, buyerAddress:esc(r.buyer_address), receiptPath:r.receipt_path, seller:esc(r.seller_name), returnable:r.returnable, totalPrice:Number(r.total_price), rate:r.rate, ownerProfit:Number(r.owner_profit), sellerNet:Number(r.seller_net), payoutStatus:r.payout_status, returnStatus:r.return_status });
+        const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), returnable:r.returnable, status:r.status, condition:r.condition, image:esc(r.image), descRaw:r.description, desc:esc(r.description) });
+        const mapOrder = r => ({ txId:r.tx_id, sellerId:r.seller_id, itemTitle:esc(r.item_title), buyer:esc(r.buyer), buyerPhone:esc(r.buyer_phone), buyerLocation:r.buyer_location, buyerAddress:esc(r.buyer_address), receiptPath:r.receipt_path, seller:esc(r.seller_name), returnable:r.returnable, totalPrice:Number(r.total_price), rate:r.rate, ownerProfit:Number(r.owner_profit), sellerNet:Number(r.seller_net), payoutStatus:r.payout_status, returnStatus:r.return_status });
 
         async function signedUrl(path) {
             if (!path) return '';
@@ -758,6 +796,9 @@
             }
             const p = await sb.from('products').select('*').order('created_at', { ascending: false });
             products = (p.data || []).map(mapProduct);
+            const rt = await sb.from('ratings').select('*').order('created_at', { ascending: false });
+            ratings = rt.data || [];
+            ratedTx = new Set(ratings.filter(r => currentUser && r.buyer_id === currentUser.id).map(r => r.tx_id));
             transactions = []; users = [];
             if (currentUser || isAdminUnlocked) {
                 const o = await sb.from('orders').select('*').order('created_at', { ascending: false });
@@ -767,7 +808,7 @@
                 const u = await sb.from('profiles').select('*').order('created_at', { ascending: false });
                 users = (u.data || []).map(mapUser);
             }
-            renderProducts(); updateHeaderUserUI(); updateAdminDashboard();
+            renderProducts(); updateHeaderUserUI(); updateAdminDashboard(); updateCartBadge();
         }
 
         async function initSession() {
@@ -851,6 +892,102 @@
             showToast("تمت الإزالة");
             renderPerm();
         }
+        const sellerRating = id => { const r = ratings.filter(x => x.seller_id === id); return { n: r.length, avg: r.length ? r.reduce((a, x) => a + x.stars, 0) / r.length : 0, list: r }; };
+        const starsBadge = id => { const x = sellerRating(id); return x.n ? `<span class="text-amber-400 text-[11px]">★ ${x.avg.toFixed(1)} (${x.n})</span>` : '<span class="text-gray-500 text-[10px]">بدون تقييم</span>'; };
+        function openProduct(id) {
+            const p = products.find(x => x.id === id); if (!p) return;
+            const s = sellerRating(p.sellerId);
+            document.getElementById('product-body').innerHTML = `
+                <img src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-64 object-cover rounded-xl">
+                <div class="flex justify-between items-start gap-2"><h3 class="font-black text-white text-lg">${p.title}</h3><span class="text-xs px-2 py-0.5 rounded-full bg-slate-950 text-emerald-400 border border-emerald-500/30 shrink-0">${p.category}</span></div>
+                <p class="text-sm text-gray-300 whitespace-pre-line">${p.desc || ''}</p>
+                <div class="text-xs text-gray-400">الحالة: ${esc(p.condition || '-')} • قابل للإرجاع: ${esc(p.returnable || 'لا')}</div>
+                <div class="text-2xl font-black text-white">${formatEGP(p.price)}</div>
+                <div class="bg-slate-950 border border-gray-800 rounded-xl p-3 space-y-2">
+                    <div class="text-xs text-gray-400">البائع: <strong class="text-white">${p.seller}</strong> ${starsBadge(p.sellerId)}</div>
+                    ${s.list.slice(0, 5).map(r => `<div class="text-[11px] border-t border-gray-800 pt-1.5"><span class="text-amber-400">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span> <span class="text-gray-400">${esc(r.buyer_name)}</span><div class="text-gray-300">${esc(r.comment || '')}</div></div>`).join('') || '<div class="text-[11px] text-gray-500">لا توجد تقييمات بعد.</div>'}
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="addToCart(${p.id})" class="flex-1 bg-slate-800 border border-gray-600 text-white font-black py-2.5 rounded-xl text-sm cursor-pointer">🛒 أضف للسلة</button>
+                    <button onclick="closeProduct(); openCheckoutModal(${p.id})" class="flex-1 bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl text-sm cursor-pointer">شراء الآن</button>
+                </div>`;
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+        function closeProduct() { document.getElementById('product-modal').classList.add('hidden'); }
+        const saveCart = () => { try { localStorage.setItem('waseet_cart', JSON.stringify(cart)); } catch (e) {} updateCartBadge(); };
+        function updateCartBadge() {
+            const n = cart.filter(id => products.some(p => p.id === id && p.status === 'approved')).length;
+            const b = document.getElementById('cart-count');
+            if (b) { b.textContent = n; b.style.display = n ? 'flex' : 'none'; }
+        }
+        function addToCart(id) { if (!cart.includes(id)) { cart.push(id); saveCart(); } showToast("تمت الإضافة للسلة 🛒"); }
+        function removeFromCart(id) { cart = cart.filter(x => x !== id); saveCart(); renderCart(); }
+        function openCart() { renderCart(); document.getElementById('cart-modal').classList.remove('hidden'); }
+        function closeCart() { document.getElementById('cart-modal').classList.add('hidden'); }
+        function renderCart() {
+            const items = cart.map(id => products.find(p => p.id === id)).filter(p => p && p.status === 'approved');
+            document.getElementById('cart-items').innerHTML = items.map(p => `
+                <div class="flex items-center gap-3 bg-slate-950 border border-gray-800 rounded-xl p-2">
+                    <img src="${p.image}" class="w-14 h-14 rounded-lg object-cover" onerror="this.style.display='none'">
+                    <div class="flex-1 text-right text-xs"><div class="font-bold text-white">${p.title}</div><div class="text-emerald-400 font-black">${formatEGP(p.price)}</div></div>
+                    <button onclick="closeCart(); openCheckoutModal(${p.id})" class="bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-lg text-xs cursor-pointer">شراء</button>
+                    <button onclick="removeFromCart(${p.id})" class="text-red-400 px-2 cursor-pointer">✕</button>
+                </div>`).join('') || '<p class="text-center text-gray-500 text-xs py-6">السلة فاضية</p>';
+            document.getElementById('cart-total').textContent = formatEGP(items.reduce((a, p) => a + p.price, 0));
+        }
+        async function setProductStatus(id, status) {
+            const { error } = await sb.from('products').update({ status }).eq('id', id);
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast(status === 'approved' ? "تم اعتماد المنتج ✅" : "تم إخفاء المنتج");
+        }
+        async function rateSeller(txId) {
+            const t = transactions.find(x => x.txId === txId); if (!t) return;
+            const stars = parseInt(prompt("قيّم البائع من 1 إلى 5 (5 = ممتاز)"));
+            if (!(stars >= 1 && stars <= 5)) return;
+            const comment = (prompt("اكتب تعليقك (اختياري)") || '').trim().slice(0, 300);
+            const { error } = await sb.from('ratings').insert({ tx_id: txId, seller_id: t.sellerId, buyer_id: currentUser.id, buyer_name: currentUser.rawName, stars, comment });
+            if (error) { showToast("خطأ", error.message); return; }
+            await loadAll();
+            showToast("شكراً لتقييمك ⭐");
+        }
+        let editingId = null;
+        function closeEdit() { document.getElementById('edit-modal').classList.add('hidden'); }
+        function openEdit(id) {
+            const p = products.find(x => x.id === id); if (!p) return;
+            editingId = id;
+            const c = document.getElementById('edit-cat'), r = document.getElementById('edit-ret');
+            if (!c.options.length) c.innerHTML = document.getElementById('item-category').innerHTML;
+            if (!r.options.length) r.innerHTML = document.getElementById('item-returnable').innerHTML;
+            document.getElementById('edit-title').value = p.titleRaw;
+            c.value = p.category; r.value = p.returnable;
+            document.getElementById('edit-price').value = p.price;
+            document.getElementById('edit-desc').value = p.descRaw || '';
+            document.getElementById('edit-img').value = '';
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+        async function saveEdit() {
+            const p = products.find(x => x.id === editingId); if (!p) return;
+            const upd = {
+                title: document.getElementById('edit-title').value.trim() || p.titleRaw,
+                category: document.getElementById('edit-cat').value,
+                returnable: document.getElementById('edit-ret').value,
+                price: parseFloat(document.getElementById('edit-price').value) || p.price,
+                description: document.getElementById('edit-desc').value.trim()
+            };
+            const f = document.getElementById('edit-img').files[0];
+            if (f) {
+                const path = currentUser.id + '/' + Date.now() + '.jpg';
+                const up = await sb.storage.from('products').upload(path, await compressImg(f), { contentType: 'image/jpeg' });
+                if (up.error) { showToast("خطأ", "فشل رفع الصورة."); return; }
+                upd.image = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
+            }
+            const { error } = await sb.from('products').update(upd).eq('id', editingId);
+            if (error) { showToast("خطأ", error.message); return; }
+            closeEdit();
+            await loadAll();
+            showToast("تم حفظ التعديلات ✅");
+        }
         function toggleHeaderMenu(force) {
             const m = document.getElementById('header-menu');
             if (!m) return;
@@ -899,7 +1036,7 @@
             if (!loggedIn) toggleHeaderMenu(false);
             buildHeaderMenu();
             const vBar = document.getElementById('email-verify-bar');
-            if (vBar) vBar.classList.toggle('hidden', !(currentUser && !currentUser.emailVerified));
+            if (vBar) vBar.classList.toggle('hidden', !(currentUser && !currentUser.emailVerified && !(currentUser.role === 'seller' && currentUser.status === 'approved')));
             const sellBtn = document.getElementById('sell-btn');
             if (sellBtn) {
                 const ok = !!currentUser && currentUser.role === 'seller' && currentUser.status === 'approved';
@@ -1052,11 +1189,11 @@ async function logoutUser() {
 
             document.getElementById('seller-my-products-tbody').innerHTML = myProducts.length === 0 ? `<tr><td colspan="5" class="text-center py-3 text-gray-500">لا توجد منتجات.</td></tr>` : myProducts.map(p => `
                 <tr>
-                    <td class="py-2 px-2 font-bold text-white">${p.title}</td>
+                    <td class="py-2 px-2 font-bold text-white">${p.title} <span class="text-[10px] ${p.status === 'approved' ? 'text-emerald-400' : 'text-amber-400'}">(${p.status === 'approved' ? 'معتمد' : (p.status === 'pending' ? 'قيد المراجعة' : 'مرفوض')})</span></td>
                     <td class="py-2 px-2">${p.category}</td>
                     <td class="py-2 px-2 font-black">${formatEGP(p.price)}</td>
                     <td class="py-2 px-2">${p.returnable}</td>
-                    <td class="py-2 px-2 text-emerald-400 font-bold">معروض</td>
+                    <td class="py-2 px-2"><button onclick="openEdit(${p.id})" class="bg-slate-800 border border-gray-600 text-white px-2.5 py-1 rounded-lg text-[11px] font-bold cursor-pointer">✏️ تعديل</button></td>
                 </tr>
             `).join('');
         }
@@ -1073,7 +1210,7 @@ async function logoutUser() {
                     <td class="py-2.5 px-2 font-black">${formatEGP(t.totalPrice)}</td>
                     <td class="py-2.5 px-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-gray-300">${t.returnStatus || 'سليم'}</span></td>
                     <td class="py-2.5 px-2">
-                        ${t.returnable === 'نعم' && (!t.returnStatus || t.returnStatus === 'سليم') ? `<button onclick="requestProductReturn('${t.txId}')" class="bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded cursor-pointer">إرجاع</button>` : '-'}
+                        ${t.returnable === 'نعم' && (!t.returnStatus || t.returnStatus === 'سليم') ? `<button onclick="requestProductReturn('${t.txId}')" class="bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded cursor-pointer">إرجاع</button>` : ''} ${ratedTx.has(t.txId) ? '<span class="text-emerald-400 text-[10px]">✔ تم التقييم</span>' : `<button onclick="rateSeller('${t.txId}')" class="bg-purple-500 text-white font-bold px-2.5 py-1 rounded cursor-pointer">قيّم البائع</button>`}
                     </td>
                 </tr>
             `).join('');
@@ -1096,9 +1233,9 @@ async function requestProductReturn(txId) {
         function renderProducts() {
             const grid = document.getElementById('products-grid');
             const search = document.getElementById('search-input').value.toLowerCase();
-            document.getElementById('count-all').textContent = products.length;
+            document.getElementById('count-all').textContent = products.filter(i => i.status === 'approved').length;
 
-            const filtered = products.filter(i => (currentCategoryFilter === 'all' || i.category === currentCategoryFilter) && (i.title.toLowerCase().includes(search) || i.seller.toLowerCase().includes(search)));
+            const filtered = products.filter(i => i.status === 'approved' && (currentCategoryFilter === 'all' || i.category === currentCategoryFilter) && (i.title.toLowerCase().includes(search) || i.seller.toLowerCase().includes(search)));
             if (filtered.length === 0) {
                 grid.innerHTML = `<div class="col-span-full text-center py-10 glass-card rounded-3xl text-gray-400">لا توجد معروضات مطابقة.</div>`;
                 return;
@@ -1107,19 +1244,19 @@ async function requestProductReturn(txId) {
             grid.innerHTML = filtered.map(item => `
                 <div class="glass-card rounded-3xl border border-gray-800 hover:border-emerald-500/50 transition overflow-hidden flex flex-col justify-between shadow-lg">
                     <div>
-                        <div class="relative h-44 w-full bg-slate-900 overflow-hidden">
-                            <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=وسيط'" class="w-full h-full object-cover">
+                        <div onclick="openProduct(${item.id})" class="relative h-44 w-full bg-slate-900 overflow-hidden cursor-pointer">
+                            <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full h-full object-cover">
                             <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-950 text-emerald-400 border border-emerald-500/30">${item.category}</span>
                         </div>
                         <div class="p-3.5 space-y-1.5">
-                            <h3 class="font-extrabold text-white text-sm truncate">${item.title}</h3>
+                            <h3 onclick="openProduct(${item.id})" class="font-extrabold text-white text-sm truncate cursor-pointer">${item.title}</h3>
                             <p class="text-xs text-gray-400 line-clamp-2">${item.desc}</p>
-                            <div class="text-[11px] text-gray-400">البائع: <strong class="text-gray-200">${item.seller}</strong></div>
+                            <div class="text-[11px] text-gray-400">البائع: <strong class="text-gray-200">${item.seller}</strong> ${starsBadge(item.sellerId)}</div>
                         </div>
                     </div>
                     <div class="p-3.5 pt-0 flex items-center justify-between border-t border-gray-800 mt-2 pt-2.5">
                         <span class="text-base font-black text-white">${formatEGP(item.price)}</span>
-                        <button onclick="openCheckoutModal(${item.id})" class="bg-emerald-500 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs shadow cursor-pointer">شراء الآن</button>
+                        <div class="flex gap-1.5"><button onclick="addToCart(${item.id})" title="أضف للسلة" class="bg-slate-800 border border-gray-600 text-white px-2.5 py-2 rounded-xl text-xs cursor-pointer">🛒</button><button onclick="openCheckoutModal(${item.id})" class="bg-emerald-500 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs shadow cursor-pointer">شراء الآن</button></div>
                     </div>
                 </div>
             `).join('');
@@ -1137,24 +1274,41 @@ async function requestProductReturn(txId) {
             document.getElementById('calc-seller-net').textContent = formatEGP(comm.sellerNet);
         }
 
+async function compressImg(file, max = 900) {
+    return new Promise(res => {
+        const img = new Image();
+        img.onload = () => {
+            const k = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement('canvas'); c.width = img.width * k; c.height = img.height * k;
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            c.toBlob(b => res(b || file), 'image/jpeg', 0.8);
+        };
+        img.onerror = () => res(file);
+        img.src = URL.createObjectURL(file);
+    });
+}
 async function submitNewItem(e) {
     e.preventDefault();
-    if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') {
-        showToast("غير مسموح", "يجب اعتماد الحساب."); return;
-    }
-    const price = parseFloat(document.getElementById('item-price').value) || 1000;
+    if (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved') { showToast("غير مسموح", "يجب اعتماد الحساب."); return; }
+    const file = document.getElementById('item-image-file').files[0];
+    if (!file) { showToast("مطلوب", "أرفق صورة المنتج."); return; }
+    const path = currentUser.id + '/' + Date.now() + '.jpg';
+    const up = await sb.storage.from('products').upload(path, await compressImg(file), { contentType: 'image/jpeg' });
+    if (up.error) { showToast("خطأ", "فشل رفع الصورة."); return; }
+    const image = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
     const { error } = await sb.from('products').insert({
         title: document.getElementById('item-title').value.trim(),
         category: document.getElementById('item-category').value,
-        seller_id: currentUser.id, seller_name: currentUser.rawName, price,
+        seller_id: currentUser.id, seller_name: currentUser.rawName,
+        price: parseFloat(document.getElementById('item-price').value) || 1000,
         returnable: document.getElementById('item-returnable').value, condition: 'جديد',
-        image: document.getElementById('item-image').value.trim() || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
-        description: document.getElementById('item-desc').value.trim()
+        image, description: document.getElementById('item-desc').value.trim(), status: 'pending'
     });
     if (error) { showToast("خطأ", error.message); return; }
+    e.target.reset();
     await loadAll();
     switchTab('seller');
-    showToast("تم نشر القطعة بنجاح");
+    showToast("تم إرسال المنتج للمراجعة ✅", "سيظهر في المتجر بعد اعتماد الإدارة.");
 }
 
         function openCheckoutModal(id) {
@@ -1237,6 +1391,7 @@ async function confirmPurchase(e) {
     });
     if (error) { showToast("خطأ", error.message); return; }
     closeCheckoutModal();
+    cart = cart.filter(x => x !== item.id); saveCart();
     await loadAll();
     showToast("تم تأكيد الطلب بنجاح! 🎉");
 }
@@ -1282,7 +1437,7 @@ async function lockAdminPanel() {
 }
 
 async function updateUserStatus(userId, status) {
-    const { error } = await sb.from('profiles').update({ status }).eq('id', userId);
+    const { error } = await sb.from('profiles').update(status === 'approved' ? { status, email_verified: true } : { status }).eq('id', userId);
     if (error) { showToast("خطأ", error.message); return; }
     await loadAll();
     showToast(status === 'approved' ? "تم الاعتماد" : "تم الرفض");
@@ -1340,11 +1495,11 @@ async function markPaid(idx) {
 
             document.getElementById('admin-products-tbody').innerHTML = products.length === 0 ? `<tr><td colspan="5" class="text-center py-3 text-gray-500">لا توجد منتجات.</td></tr>` : products.map(p => `
                 <tr>
-                    <td class="py-2.5 px-3 font-bold text-white">${p.title}</td>
+                    <td class="py-2.5 px-3 font-bold text-white">${p.title}${p.status !== 'approved' ? ` <span class="text-[10px] text-amber-400">(${p.status === 'pending' ? 'بانتظار الاعتماد' : 'مخفي'})</span>` : ''}</td>
                     <td class="py-2.5 px-3">${p.category}</td>
                     <td class="py-2.5 px-3">${p.seller}</td>
                     <td class="py-2.5 px-3 font-black">${formatEGP(p.price)}</td>
-                    <td class="py-2.5 px-3"><button onclick="deleteProduct(${p.id})" class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded">حذف</button></td>
+                    <td class="py-2.5 px-3 whitespace-nowrap">${p.status !== 'approved' ? `<button onclick="setProductStatus(${p.id}, 'approved')" class="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded ml-1">اعتماد</button>` : `<button onclick="setProductStatus(${p.id}, 'rejected')" class="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded ml-1">إخفاء</button>`}<button onclick="deleteProduct(${p.id})" class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded">حذف</button></td>
                 </tr>
             `).join('');
 
