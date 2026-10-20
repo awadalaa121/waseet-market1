@@ -739,7 +739,8 @@
             <button onclick="saveEdit()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">حفظ التعديلات</button>
         </div>
     </div>
-<script>
+<script src="config.js"></script>
+    <script>
         let currentCategoryFilter = 'all';
         let selectedCheckoutItemId = null;
         let isAdminUnlocked = false;
@@ -770,7 +771,7 @@
         let uploadedReceiptFile = null, uploadedIdCardFile = null;
 
         const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-        const authEmail = phone => String(phone).replace(/\D/g, '') + '@waseet-users.com';
+        const authEmail = v => String(v).includes('@') ? String(v).trim().toLowerCase() : String(v).replace(/\D/g, '') + '@waseet-users.com';
 
         const mapUser = r => ({ id:r.id, rawName:r.name, name:esc(r.name), phone:esc(r.phone), email:esc(r.email), role:r.role, gender:esc(r.gender), services:esc(r.services), status:r.status, nationalId:esc(r.national_id), idCardPath:r.id_card_path, emailVerified:!!r.email_verified, balance:0 });
         const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), returnable:r.returnable, status:r.status, condition:r.condition, image:esc(r.image), descRaw:r.description, desc:esc(r.description) });
@@ -811,7 +812,9 @@
             renderProducts(); updateHeaderUserUI(); updateAdminDashboard(); updateCartBadge();
         }
 
-        async function initSession() {
+        let initQ = Promise.resolve();
+        function initSession() { return (initQ = initQ.then(_initSession)); }
+        async function _initSession() {
             currentUser = null; isAdminUnlocked = false; currentAdminRole = null;
             const { data: { session } } = await sb.auth.getSession();
             if (session) {
@@ -898,7 +901,7 @@
             const p = products.find(x => x.id === id); if (!p) return;
             const s = sellerRating(p.sellerId);
             document.getElementById('product-body').innerHTML = `
-                <img src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-64 object-cover rounded-xl">
+                <img src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-72 object-contain bg-slate-950 rounded-xl">
                 <div class="flex justify-between items-start gap-2"><h3 class="font-black text-white text-lg">${p.title}</h3><span class="text-xs px-2 py-0.5 rounded-full bg-slate-950 text-emerald-400 border border-emerald-500/30 shrink-0">${p.category}</span></div>
                 <p class="text-sm text-gray-300 whitespace-pre-line">${p.desc || ''}</p>
                 <div class="text-xs text-gray-400">الحالة: ${esc(p.condition || '-')} • قابل للإرجاع: ${esc(p.returnable || 'لا')}</div>
@@ -928,7 +931,7 @@
             const items = cart.map(id => products.find(p => p.id === id)).filter(p => p && p.status === 'approved');
             document.getElementById('cart-items').innerHTML = items.map(p => `
                 <div class="flex items-center gap-3 bg-slate-950 border border-gray-800 rounded-xl p-2">
-                    <img src="${p.image}" class="w-14 h-14 rounded-lg object-cover" onerror="this.style.display='none'">
+                    <img src="${p.image}" class="w-14 h-14 rounded-lg object-contain bg-slate-950" onerror="this.style.display='none'">
                     <div class="flex-1 text-right text-xs"><div class="font-bold text-white">${p.title}</div><div class="text-emerald-400 font-black">${formatEGP(p.price)}</div></div>
                     <button onclick="closeCart(); openCheckoutModal(${p.id})" class="bg-emerald-500 text-slate-950 font-black px-3 py-1.5 rounded-lg text-xs cursor-pointer">شراء</button>
                     <button onclick="removeFromCart(${p.id})" class="text-red-400 px-2 cursor-pointer">✕</button>
@@ -1093,7 +1096,12 @@ async function handleUserLogin(e) {
     const { error } = await sb.auth.signInWithPassword({ email: authEmail(phone), password: pass });
     if (error) { showToast("خطأ ⚠️", "رقم الهاتف أو الرقم السري غير صحيح."); return; }
     await initSession();
-    if (!currentUser) { await sb.auth.signOut(); showToast("خطأ", "الحساب غير موجود أو تم حذفه."); return; }
+    if (!currentUser) {
+        if (isAdminUnlocked) { switchTab('admin'); showToast("أهلاً بك في لوحة الإدارة 🔓"); return; }
+        await sb.auth.signOut();
+        showToast("خطأ", "الحساب موجود لكن بياناته غير مكتملة. تواصل مع الإدارة.");
+        return;
+    }
     switchTab(currentUser.role === 'seller' ? 'seller' : 'buyer-dashboard');
     showToast("أهلاً بك!", currentUser.name);
 }
@@ -1245,7 +1253,7 @@ async function requestProductReturn(txId) {
                 <div class="glass-card rounded-3xl border border-gray-800 hover:border-emerald-500/50 transition overflow-hidden flex flex-col justify-between shadow-lg">
                     <div>
                         <div onclick="openProduct(${item.id})" class="relative h-44 w-full bg-slate-900 overflow-hidden cursor-pointer">
-                            <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full h-full object-cover">
+                            <img src="${item.image}" alt="${item.title}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full h-full object-contain">
                             <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-950 text-emerald-400 border border-emerald-500/30">${item.category}</span>
                         </div>
                         <div class="p-3.5 space-y-1.5">
@@ -1320,7 +1328,7 @@ async function submitNewItem(e) {
                 document.getElementById('buyer-phone').value = currentUser.phone;
             }
             document.getElementById('checkout-item-summary').innerHTML = `
-                <img src="${item.image}" class="w-10 h-10 rounded-lg object-cover">
+                <img src="${item.image}" class="w-10 h-10 rounded-lg object-contain bg-slate-950">
                 <div class="flex-grow truncate"><h4 class="font-bold text-white text-xs truncate">${item.title}</h4></div>
                 <strong class="text-emerald-400 text-xs">${formatEGP(item.price)}</strong>
             `;
