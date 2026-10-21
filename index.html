@@ -766,6 +766,13 @@
             <button onclick="submitRate()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">إرسال التقييم</button>
         </div>
     </div>
+    <div id="lightbox" class="hidden fixed inset-0 z-[90] bg-black/95 flex items-center justify-center" onclick="if (event.target === this) closeLightbox()" ontouchstart="lbX = event.touches[0].clientX" ontouchend="lbSwipe(event)">
+        <button onclick="closeLightbox()" class="absolute top-3 right-3 text-white text-3xl w-11 h-11 rounded-full bg-black/50 cursor-pointer" aria-label="إغلاق">✕</button>
+        <button id="lb-prev" onclick="lbMove(-1)" class="hidden absolute left-2 top-1/2 -translate-y-1/2 text-white text-4xl w-11 h-14 rounded-xl bg-black/50 cursor-pointer" aria-label="السابقة">‹</button>
+        <button id="lb-next" onclick="lbMove(1)" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-white text-4xl w-11 h-14 rounded-xl bg-black/50 cursor-pointer" aria-label="التالية">›</button>
+        <img id="lb-img" src="" alt="" class="max-w-[96vw] max-h-[90vh] object-contain select-none">
+        <div id="lb-count" class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full"></div>
+    </div>
 <script>
         let currentCategoryFilter = 'all';
         let selectedCheckoutItemId = null;
@@ -928,7 +935,8 @@
             const p = products.find(x => x.id === id); if (!p) return;
             const s = sellerRating(p.sellerId);
             document.getElementById('product-body').innerHTML = `
-                <img id="pimg" src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-72 object-contain bg-slate-950 rounded-xl">
+                <img id="pimg" onclick="openLightbox(${p.id})" src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-72 object-contain bg-slate-950 rounded-xl cursor-zoom-in">
+                <div class="text-[10px] text-gray-500 text-center">اضغط على الصورة للتكبير 🔍</div>
                 ${p.imagesRaw.length > 1 ? `<div class="flex gap-1.5 overflow-x-auto pb-1">${p.imagesRaw.map((u, i) => `<img src="${esc(u)}" onclick="swapImg(${p.id}, ${i})" class="w-14 h-14 rounded-lg object-cover bg-slate-950 border border-gray-700 cursor-pointer shrink-0">`).join('')}</div>` : ''}
                 <div class="flex justify-between items-start gap-2"><h3 class="font-black text-white text-lg">${p.title}</h3><span class="text-xs px-2 py-0.5 rounded-full bg-slate-950 text-emerald-400 border border-emerald-500/30 shrink-0">${p.category}</span></div>
                 <p class="text-sm text-gray-300 whitespace-pre-line">${p.desc || ''}</p>
@@ -947,6 +955,33 @@
                 </div>`;
             document.getElementById('product-modal').classList.remove('hidden');
         }
+        let lbImgs = [], lbI = 0, lbX = null;
+        function openLightbox(id) {
+            const pr = products.find(x => x.id === id); if (!pr) return;
+            const el = document.getElementById('pimg');
+            lbImgs = pr.imagesRaw;
+            lbI = Math.max(0, lbImgs.findIndex(u => el && el.src === u));
+            showLb();
+            document.getElementById('lightbox').classList.remove('hidden');
+        }
+        function showLb() {
+            document.getElementById('lb-img').src = lbImgs[lbI];
+            document.getElementById('lb-count').textContent = lbImgs.length > 1 ? (lbI + 1) + ' / ' + lbImgs.length : '';
+            ['lb-prev', 'lb-next'].forEach(i => document.getElementById(i).classList.toggle('hidden', lbImgs.length < 2));
+        }
+        function lbMove(d) { if (lbImgs.length < 2) return; lbI = (lbI + d + lbImgs.length) % lbImgs.length; showLb(); }
+        function closeLightbox() { document.getElementById('lightbox').classList.add('hidden'); }
+        function lbSwipe(e) {
+            if (lbX === null) return;
+            const dx = e.changedTouches[0].clientX - lbX; lbX = null;
+            if (Math.abs(dx) > 50) lbMove(dx < 0 ? 1 : -1);
+        }
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('lightbox').classList.contains('hidden')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') lbMove(1);
+            if (e.key === 'ArrowRight') lbMove(-1);
+        });
         function swapImg(id, i) {
             const p = products.find(x => x.id === id), el = document.getElementById('pimg');
             if (p && el) el.src = p.imagesRaw[i];
