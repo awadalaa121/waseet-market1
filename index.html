@@ -433,8 +433,8 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block font-bold text-gray-300 mb-1">صورة المنتج (من الهاتف أو الكاميرا) *</label>
-                                <input type="file" id="item-image-file" accept="image/*" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
+                                <label class="block font-bold text-gray-300 mb-1">صور المنتج (من الهاتف أو الكاميرا، حتى 5 صور) *</label>
+                                <input type="file" id="item-image-file" accept="image/*" multiple class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
                             </div>
                             <div>
                                 <label class="block font-bold text-gray-300 mb-1">وصف تفصيلي *</label>
@@ -751,7 +751,7 @@
             <input id="edit-price" type="number" min="1" placeholder="السعر" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none">
             <div class="grid grid-cols-2 gap-2"><select id="edit-cond" class="bg-slate-950 border border-gray-700 rounded-xl px-2 py-2 text-white"><option value="جديد">🆕 جديد</option><option value="مستعمل">♻️ مستعمل</option></select><input id="edit-stock" type="number" min="0" placeholder="الكمية" class="bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none"></div>
             <textarea id="edit-desc" rows="3" placeholder="الوصف" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none"></textarea>
-            <div><label class="text-gray-400">صورة جديدة (اختياري)</label><input id="edit-img" type="file" accept="image/*" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white mt-1"></div>
+            <div><label class="text-gray-400">صور جديدة (اختياري، تستبدل الصور الحالية، حتى 5)</label><input id="edit-img" type="file" accept="image/*" multiple class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white mt-1"></div>
             <p class="text-[10px] text-amber-400">تعديل السعر يتم فوراً. تعديل الاسم أو الوصف أو الصورة أو التصنيف يرجع المنتج للمراجعة قبل ظهوره.</p>
             <button onclick="saveEdit()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">حفظ التعديلات</button>
         </div>
@@ -800,7 +800,7 @@
         const authEmail = v => String(v).includes('@') ? String(v).trim().toLowerCase() : String(v).replace(/\D/g, '') + '@waseet-users.com';
 
         const mapUser = r => ({ id:r.id, rawName:r.name, name:esc(r.name), phone:esc(r.phone), email:esc(r.email), role:r.role, gender:esc(r.gender), services:esc(r.services), status:r.status, nationalId:esc(r.national_id), idCardPath:r.id_card_path, emailVerified:!!r.email_verified, balance:0 });
-        const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), stock:Number(r.stock ?? 1), returnable:r.returnable, status:r.status, condition:r.condition, image:esc(r.image), descRaw:r.description, desc:esc(r.description) });
+        const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), stock:Number(r.stock ?? 1), returnable:r.returnable, status:r.status, condition:r.condition, image:esc((r.images && r.images[0]) || r.image), imagesRaw:(r.images && r.images.length ? r.images : [r.image]), descRaw:r.description, desc:esc(r.description) });
         const mapOrder = r => ({ txId:r.tx_id, itemId:r.item_id, sellerId:r.seller_id, itemTitle:esc(r.item_title), buyer:esc(r.buyer), buyerPhone:esc(r.buyer_phone), buyerLocation:r.buyer_location, buyerAddress:esc(r.buyer_address), receiptPath:r.receipt_path, seller:esc(r.seller_name), returnable:r.returnable, totalPrice:Number(r.total_price), rate:r.rate, ownerProfit:Number(r.owner_profit), sellerNet:Number(r.seller_net), payoutStatus:r.payout_status, returnStatus:r.return_status });
 
         async function signedUrl(path) {
@@ -928,7 +928,8 @@
             const p = products.find(x => x.id === id); if (!p) return;
             const s = sellerRating(p.sellerId);
             document.getElementById('product-body').innerHTML = `
-                <img src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-72 object-contain bg-slate-950 rounded-xl">
+                <img id="pimg" src="${p.image}" onerror="this.src='https://placehold.co/600x400/111827/10b981?text=Waseet'" class="w-full max-h-72 object-contain bg-slate-950 rounded-xl">
+                ${p.imagesRaw.length > 1 ? `<div class="flex gap-1.5 overflow-x-auto pb-1">${p.imagesRaw.map((u, i) => `<img src="${esc(u)}" onclick="swapImg(${p.id}, ${i})" class="w-14 h-14 rounded-lg object-cover bg-slate-950 border border-gray-700 cursor-pointer shrink-0">`).join('')}</div>` : ''}
                 <div class="flex justify-between items-start gap-2"><h3 class="font-black text-white text-lg">${p.title}</h3><span class="text-xs px-2 py-0.5 rounded-full bg-slate-950 text-emerald-400 border border-emerald-500/30 shrink-0">${p.category}</span></div>
                 <p class="text-sm text-gray-300 whitespace-pre-line">${p.desc || ''}</p>
                 <div class="text-xs text-gray-400">الحالة: ${esc(p.condition || '-')} • قابل للإرجاع: ${esc(p.returnable || 'لا')}</div>
@@ -945,6 +946,10 @@
                     <button onclick="closeProduct(); openCheckoutModal(${p.id}, qv())" class="flex-1 bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl text-sm cursor-pointer">شراء الآن</button>
                 </div>`;
             document.getElementById('product-modal').classList.remove('hidden');
+        }
+        function swapImg(id, i) {
+            const p = products.find(x => x.id === id), el = document.getElementById('pimg');
+            if (p && el) el.src = p.imagesRaw[i];
         }
         function closeProduct() { document.getElementById('product-modal').classList.add('hidden'); }
         const saveCart = () => { try { localStorage.setItem('waseet_cart2', JSON.stringify(cart)); } catch (e) {} updateCartBadge(); };
@@ -1058,12 +1063,12 @@
                 stock: Math.max(0, parseInt(document.getElementById('edit-stock').value) || 0),
                 description: document.getElementById('edit-desc').value.trim()
             };
-            const f = document.getElementById('edit-img').files[0];
-            if (f) {
-                const path = currentUser.id + '/' + Date.now() + '.jpg';
-                const up = await sb.storage.from('products').upload(path, await compressImg(f), { contentType: 'image/jpeg' });
-                if (up.error) { showToast("خطأ", "فشل رفع الصورة."); return; }
-                upd.image = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
+            const fs = document.getElementById('edit-img').files;
+            if (fs.length) {
+                const uid = (await sb.auth.getSession()).data.session.user.id;
+                const urls = await uploadImages(fs, uid);
+                if (!urls) { showToast("خطأ", "فشل رفع الصور."); return; }
+                upd.image = urls[0]; upd.images = urls;
             }
             const { error } = await sb.from('products').update(upd).eq('id', editingId);
             if (error) { showToast("خطأ", error.message); return; }
@@ -1373,6 +1378,16 @@ async function requestProductReturn(txId) {
             document.getElementById('calc-seller-net').textContent = formatEGP(comm.sellerNet);
         }
 
+async function uploadImages(files, uid) {
+    const urls = [];
+    for (const f of Array.from(files).slice(0, 5)) {
+        const path = uid + '/' + Date.now() + '_' + urls.length + '.jpg';
+        const up = await sb.storage.from('products').upload(path, await compressImg(f), { contentType: 'image/jpeg' });
+        if (up.error) return null;
+        urls.push(sb.storage.from('products').getPublicUrl(path).data.publicUrl);
+    }
+    return urls;
+}
 async function compressImg(file, max = 900) {
     return new Promise(res => {
         const img = new Image();
@@ -1390,13 +1405,12 @@ async function submitNewItem(e) {
     e.preventDefault();
     const asAdmin = isAdminUnlocked;
     if (!asAdmin && (!currentUser || currentUser.role !== 'seller' || currentUser.status !== 'approved')) { showToast("غير مسموح", "يجب اعتماد الحساب."); return; }
-    const file = document.getElementById('item-image-file').files[0];
-    if (!file) { showToast("مطلوب", "أرفق صورة المنتج."); return; }
+    const files = document.getElementById('item-image-file').files;
+    if (!files.length) { showToast("مطلوب", "أرفق صورة واحدة على الأقل."); return; }
     const uid = (await sb.auth.getSession()).data.session.user.id;
-    const path = uid + '/' + Date.now() + '.jpg';
-    const up = await sb.storage.from('products').upload(path, await compressImg(file), { contentType: 'image/jpeg' });
-    if (up.error) { showToast("خطأ", "فشل رفع الصورة."); return; }
-    const image = sb.storage.from('products').getPublicUrl(path).data.publicUrl;
+    const urls = await uploadImages(files, uid);
+    if (!urls) { showToast("خطأ", "فشل رفع الصور."); return; }
+    const image = urls[0];
     const { error } = await sb.from('products').insert({
         title: document.getElementById('item-title').value.trim(),
         category: document.getElementById('item-category').value,
@@ -1404,7 +1418,7 @@ async function submitNewItem(e) {
         price: parseFloat(document.getElementById('item-price').value) || 1000,
         stock: Math.max(1, parseInt(document.getElementById('item-stock').value) || 1),
         returnable: document.getElementById('item-returnable').value, condition: document.getElementById('item-condition').value,
-        image, description: document.getElementById('item-desc').value.trim(), status: asAdmin ? 'approved' : 'pending'
+        image, images: urls, description: document.getElementById('item-desc').value.trim(), status: asAdmin ? 'approved' : 'pending'
     });
     if (error) { showToast("خطأ", error.message); return; }
     e.target.reset();
