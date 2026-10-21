@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#10b981">
     <link rel="icon" type="image/png" href="icon-192.png">
@@ -65,6 +66,7 @@
 <body class="antialiased selection:bg-emerald-500 selection:text-white min-h-screen flex flex-col">
 
     <!-- الهيدر الرئيسي -->
+    <div dir="rtl" class="text-center py-1.5 px-3 bg-gradient-to-l from-emerald-950 via-slate-900 to-emerald-950 border-b border-amber-500/20" style="font-family:'Amiri Quran','Amiri','Traditional Arabic',serif"><span class="text-amber-300 text-lg sm:text-xl leading-loose">﴿يَا أَيُّهَا الَّذِينَ آمَنُوا أَوْفُوا بِالْعُقُودِ﴾</span> <span class="text-gray-500 text-[11px]" style="font-family:inherit">[المائدة: ١]</span></div>
     <header class="glass-card border-b border-gray-800/80 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
             <!-- الشعار -->
@@ -688,7 +690,9 @@
     </div>
 
     <!-- الفوتر -->
-    <footer class="border-t border-gray-800 bg-slate-950 py-4 px-3 text-xs text-gray-500 mt-auto text-center sm:text-right">
+    <div class="max-w-3xl mx-auto my-6 px-4"><div dir="rtl" class="text-center py-4 px-4 rounded-2xl border border-amber-500/25 bg-emerald-950/30" style="font-family:'Amiri Quran','Amiri','Traditional Arabic',serif"><span class="text-amber-300 text-lg sm:text-xl leading-loose">﴿إِنَّ اللَّهَ يَأْمُرُكُمْ أَن تُؤَدُّوا الْأَمَانَاتِ إِلَىٰ أَهْلِهَا﴾</span> <span class="text-gray-500 text-[11px]" style="font-family:inherit">[النساء: ٥٨]</span></div>
+</div>
+<footer class="border-t border-gray-800 bg-slate-950 py-4 px-3 text-xs text-gray-500 mt-auto text-center sm:text-right">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
             <span>وسيط ماركت — جميع الحقوق محفوظة © 2025</span>
             <button onclick="requestAdminAccess()" class="text-gray-400 hover:text-amber-400 font-bold transition flex items-center gap-1 cursor-pointer">
@@ -753,7 +757,16 @@
         </div>
     </div>
 <script src="config.js"></script>
-    <script>
+        <div id="rate-modal" class="hidden fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-3">
+        <div dir="rtl" class="bg-slate-900 border border-gray-700 rounded-2xl w-full max-w-sm p-5 space-y-3 text-sm">
+            <div class="flex justify-between items-center"><h3 class="font-black text-white">⭐ قيّم المنتج وعلّق عليه</h3><button onclick="closeRate()" class="text-gray-400 text-xl cursor-pointer">✕</button></div>
+            <div id="rate-title" class="text-xs text-gray-300"></div>
+            <div id="rate-stars" class="flex justify-center gap-1 text-4xl"></div>
+            <textarea id="rate-comment" rows="3" maxlength="300" placeholder="اكتب رأيك في المنتج (اختياري)" class="w-full bg-slate-950 border border-gray-700 rounded-xl px-3 py-2 text-white outline-none text-xs"></textarea>
+            <button onclick="submitRate()" class="w-full bg-emerald-500 text-slate-950 font-black py-2.5 rounded-xl cursor-pointer">إرسال التقييم</button>
+        </div>
+    </div>
+<script>
         let currentCategoryFilter = 'all';
         let selectedCheckoutItemId = null;
         let isAdminUnlocked = false;
@@ -788,7 +801,7 @@
 
         const mapUser = r => ({ id:r.id, rawName:r.name, name:esc(r.name), phone:esc(r.phone), email:esc(r.email), role:r.role, gender:esc(r.gender), services:esc(r.services), status:r.status, nationalId:esc(r.national_id), idCardPath:r.id_card_path, emailVerified:!!r.email_verified, balance:0 });
         const mapProduct = r => ({ id:r.id, titleRaw:r.title, sellerRaw:r.seller_name, title:esc(r.title), category:esc(r.category), seller:esc(r.seller_name), sellerId:r.seller_id, price:Number(r.price), stock:Number(r.stock ?? 1), returnable:r.returnable, status:r.status, condition:r.condition, image:esc(r.image), descRaw:r.description, desc:esc(r.description) });
-        const mapOrder = r => ({ txId:r.tx_id, sellerId:r.seller_id, itemTitle:esc(r.item_title), buyer:esc(r.buyer), buyerPhone:esc(r.buyer_phone), buyerLocation:r.buyer_location, buyerAddress:esc(r.buyer_address), receiptPath:r.receipt_path, seller:esc(r.seller_name), returnable:r.returnable, totalPrice:Number(r.total_price), rate:r.rate, ownerProfit:Number(r.owner_profit), sellerNet:Number(r.seller_net), payoutStatus:r.payout_status, returnStatus:r.return_status });
+        const mapOrder = r => ({ txId:r.tx_id, itemId:r.item_id, sellerId:r.seller_id, itemTitle:esc(r.item_title), buyer:esc(r.buyer), buyerPhone:esc(r.buyer_phone), buyerLocation:r.buyer_location, buyerAddress:esc(r.buyer_address), receiptPath:r.receipt_path, seller:esc(r.seller_name), returnable:r.returnable, totalPrice:Number(r.total_price), rate:r.rate, ownerProfit:Number(r.owner_profit), sellerNet:Number(r.seller_net), payoutStatus:r.payout_status, returnStatus:r.return_status });
 
         async function signedUrl(path) {
             if (!path) return '';
@@ -922,7 +935,8 @@
                 <div class="text-2xl font-black text-white">${formatEGP(p.price)}</div>
                 <div class="bg-slate-950 border border-gray-800 rounded-xl p-3 space-y-2">
                     <div class="text-xs text-gray-400">البائع: <strong class="text-white">${p.seller}</strong> ${starsBadge(p.sellerId)}</div>
-                    ${s.list.slice(0, 5).map(r => `<div class="text-[11px] border-t border-gray-800 pt-1.5"><span class="text-amber-400">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span> <span class="text-gray-400">${esc(r.buyer_name)}</span><div class="text-gray-300">${esc(r.comment || '')}</div></div>`).join('') || '<div class="text-[11px] text-gray-500">لا توجد تقييمات بعد.</div>'}
+                    <div class="text-[11px] text-emerald-400 font-bold pt-1">⭐ آراء المشترين في هذا المنتج</div>
+                    ${ratings.filter(x => x.item_id === p.id).slice(0, 8).map(r => `<div class="text-[11px] border-t border-gray-800 pt-1.5"><span class="text-amber-400">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span> <span class="text-gray-400">${esc(r.buyer_name)}</span><div class="text-gray-300">${esc(r.comment || '')}</div></div>`).join('') || '<div class="text-[11px] text-gray-500">لا توجد تقييمات لهذا المنتج بعد.</div>'}
                 </div>
                 <div class="flex items-center justify-between text-xs"><span class="text-gray-400">المتوفر: ${p.stock > 0 ? p.stock : 'نفدت الكمية'}</span>${p.stock > 0 ? `<label class="text-gray-300">الكمية <input id="pq" type="number" min="1" max="${p.stock}" value="1" oninput="chkQty(this)" class="w-16 bg-slate-950 border border-gray-700 rounded-lg px-2 py-1 text-white text-center"></label>` : ''}</div>
                 <div id="pq-msg" class="hidden text-[11px] text-red-400"></div>
@@ -991,15 +1005,31 @@
             await loadAll();
             showToast(status === 'approved' ? "تم اعتماد المنتج ✅" : "تم إخفاء المنتج");
         }
-        async function rateSeller(txId) {
+        let rateTx = null, rateStars = 0;
+        function setStars(n) {
+            rateStars = n;
+            document.getElementById('rate-stars').innerHTML = [1, 2, 3, 4, 5].map(i => `<button type="button" onclick="setStars(${i})" class="cursor-pointer ${i <= n ? 'text-amber-400' : 'text-gray-600'}">★</button>`).join('');
+        }
+        function closeRate() { document.getElementById('rate-modal').classList.add('hidden'); }
+        function rateSeller(txId) {
             const t = transactions.find(x => x.txId === txId); if (!t) return;
-            const stars = parseInt(prompt("قيّم البائع من 1 إلى 5 (5 = ممتاز)"));
-            if (!(stars >= 1 && stars <= 5)) return;
-            const comment = (prompt("اكتب تعليقك (اختياري)") || '').trim().slice(0, 300);
-            const { error } = await sb.from('ratings').insert({ tx_id: txId, seller_id: t.sellerId, buyer_id: currentUser.id, buyer_name: currentUser.rawName, stars, comment });
+            rateTx = t;
+            document.getElementById('rate-title').innerHTML = 'المنتج: <b class="text-white">' + t.itemTitle + '</b>';
+            document.getElementById('rate-comment').value = '';
+            setStars(0);
+            document.getElementById('rate-modal').classList.remove('hidden');
+        }
+        async function submitRate() {
+            if (!rateTx || !rateStars) { showToast("اختر عدد النجوم", "من 1 إلى 5."); return; }
+            const { error } = await sb.from('ratings').insert({
+                tx_id: rateTx.txId, seller_id: rateTx.sellerId, item_id: rateTx.itemId,
+                buyer_id: currentUser.id, buyer_name: currentUser.rawName, stars: rateStars,
+                comment: document.getElementById('rate-comment').value.trim().slice(0, 300)
+            });
             if (error) { showToast("خطأ", error.message); return; }
+            closeRate();
             await loadAll();
-            showToast("شكراً لتقييمك ⭐");
+            showToast("شكراً لتقييمك ⭐", "ظهر تعليقك على صفحة المنتج.");
         }
         let editingId = null;
         function closeEdit() { document.getElementById('edit-modal').classList.add('hidden'); }
@@ -1278,7 +1308,7 @@ async function logoutUser() {
                     <td class="py-2.5 px-2 font-black">${formatEGP(t.totalPrice)}</td>
                     <td class="py-2.5 px-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-gray-300">${t.returnStatus || 'سليم'}</span></td>
                     <td class="py-2.5 px-2">
-                        ${t.returnable === 'نعم' && (!t.returnStatus || t.returnStatus === 'سليم') ? `<button onclick="requestProductReturn('${t.txId}')" class="bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded cursor-pointer">إرجاع</button>` : ''} ${ratedTx.has(t.txId) ? '<span class="text-emerald-400 text-[10px]">✔ تم التقييم</span>' : `<button onclick="rateSeller('${t.txId}')" class="bg-purple-500 text-white font-bold px-2.5 py-1 rounded cursor-pointer">قيّم البائع</button>`}
+                        ${t.returnable === 'نعم' && (!t.returnStatus || t.returnStatus === 'سليم') ? `<button onclick="requestProductReturn('${t.txId}')" class="bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded cursor-pointer">إرجاع</button>` : ''} ${ratedTx.has(t.txId) ? '<span class="text-emerald-400 text-[10px]">✔ تم التقييم</span>' : `<button onclick="rateSeller('${t.txId}')" class="bg-purple-500 text-white font-bold px-2.5 py-1 rounded cursor-pointer">⭐ قيّم وعلّق</button>`}
                     </td>
                 </tr>
             `).join('');
